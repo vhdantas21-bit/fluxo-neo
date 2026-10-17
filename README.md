@@ -48,7 +48,7 @@ O projeto já vem configurado para a Vercel em [`vercel.json`](vercel.json): bui
 1. Entre em [vercel.com](https://vercel.com) com **Continue with GitHub** (conta gratuita *Hobby*).
 2. **Add New… → Project** e importe o repositório `fluxo-neo`. Se ele não aparecer, clique em *Adjust GitHub App Permissions* e libere o repositório.
 3. Não altere nada nas configurações de build: a Vercel lê o `vercel.json`.
-4. (Opcional, para contas e sincronização) Em **Environment Variables**, adicione `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`. Sem elas, o app online funciona em modo local.
+4. (Opcional, para contas e sincronização) Conecte o Supabase pela integração oficial (**Integrations → Supabase**): o app lê automaticamente `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, que a integração cria e mantém. Também dá para criar à mão `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` em **Environment Variables**. Sem nenhuma delas, o app online funciona em modo local.
 5. Clique em **Deploy**. O app fica disponível em `https://<nome-do-projeto>.vercel.app`.
 
 Depois disso, cada `git push` para `main` publica uma nova versão automaticamente, e cada outra branch ou pull request ganha um link de pré-visualização.

@@ -1,7 +1,13 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
+// VITE_* é a configuração manual (.env.local). Os NEXT_PUBLIC_* são criados e
+// mantidos pela integração Supabase ↔ Vercel; só as variáveis públicas usam
+// esse prefixo, nunca as chaves secretas.
+const env = import.meta.env
+const url = (env.VITE_SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL) as string | undefined
+const anonKey = (env.VITE_SUPABASE_ANON_KEY ||
+  env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+  env.NEXT_PUBLIC_SUPABASE_ANON_KEY) as string | undefined
 
 /** Verdadeiro quando as variáveis públicas do Supabase estão definidas. */
 export const isSupabaseConfigured = Boolean(url && anonKey && !url.includes('SEU-PROJETO'))
