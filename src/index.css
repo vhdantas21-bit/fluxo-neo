@@ -1,0 +1,117 @@
+@import 'tailwindcss';
+
+/*
+ * Identidade visual FLUXO NEO — cores do logotipo:
+ * preto #010101 (fundo carvão #171717) · azul claro #174CB5 · azul escuro #012367
+ * · laranja-avermelhado #CF3102.
+ * Os tons "-soft / -line / -fg" são versões pastel escuras das mesmas cores,
+ * usadas para dar cor às áreas sem pesar; os "-text/-fg" garantem contraste
+ * WCAG AA sobre o fundo escuro.
+ */
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --color-bg: #171717;
+  --color-surface: #1e1e1e;
+  --color-surface-2: #252525;
+  --color-surface-3: #2d2d2d;
+  --color-line: #2b2b2b;
+  --color-line-strong: #3a3a3a;
+
+  --color-fg: #fafafa;
+  --color-fg-muted: #b8b8b8;
+  --color-fg-subtle: #8c8c8c;
+
+  /* Cores da marca (sólidas) */
+  --color-primary: #174cb5;
+  --color-primary-hover: #1f5acb;
+  --color-primary-text: #9db8ee;
+  --color-deep: #012367;
+  --color-deep-hover: #0a2f80;
+  --color-accent: #cf3102;
+  --color-accent-hover: #e03e0e;
+  --color-accent-text: #f4906d;
+
+  /* Pastel escuro — azul claro (A Fazer) */
+  --color-sky: #7096e0;
+  --color-sky-soft: #1a2540;
+  --color-sky-line: #2c416e;
+  --color-sky-fg: #b0c7f4;
+
+  /* Pastel escuro — laranja-avermelhado (Fazendo) */
+  --color-ember: #e07a55;
+  --color-ember-soft: #2a1d18;
+  --color-ember-line: #553222;
+  --color-ember-fg: #f4b098;
+
+  /* Pastel escuro — azul escuro (Feito) */
+  --color-navy: #5a70b4;
+  --color-navy-soft: #161d31;
+  --color-navy-line: #29355c;
+  --color-navy-fg: #a9b7e0;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.35);
+  --shadow-pop: 0 12px 32px -8px rgb(0 0 0 / 0.6), 0 2px 6px rgb(0 0 0 / 0.35);
+
+  --animate-fade-in: fade-in 160ms ease-out;
+  --animate-pop-in: pop-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-slide-up: slide-up 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes pop-in {
+    from { opacity: 0; transform: translateY(6px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html,
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  ::selection {
+    background: var(--color-deep);
+    color: var(--color-fg);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-primary-text);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  input[type='date']::-webkit-calendar-picker-indicator {
+    filter: invert(0.75);
+    cursor: pointer;
+  }
+  dialog::backdrop {
+    background: rgb(0 0 0 / 0.65);
+    animation: fade-in 160ms ease-out;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
