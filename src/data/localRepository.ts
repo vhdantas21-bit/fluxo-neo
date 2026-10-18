@@ -3,7 +3,7 @@ import type { DataRepository } from './repository'
 
 const STORAGE_KEY = 'fluxo-neo:data:v1'
 
-const empty = (): AppData => ({ tasks: [], projects: [], categories: [], profile: { displayName: '', wipLimit: 3 } })
+const empty = (): AppData => ({ tasks: [], projects: [], categories: [], profile: { displayName: '', wipLimit: 3, avatar: null } })
 
 /**
  * Modo local: os dados ficam apenas neste navegador (localStorage).

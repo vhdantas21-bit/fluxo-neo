@@ -38,12 +38,13 @@ interface DataApi {
   updateCategory: (id: string, patch: Partial<Pick<Category, 'name' | 'color'>>) => void
   deleteCategory: (id: string) => void
 
-  updateProfile: (profile: Profile) => void
+  /** Atualiza só os campos indicados do perfil. */
+  updateProfile: (patch: Partial<Profile>) => void
 }
 
 const DataContext = createContext<DataApi | null>(null)
 
-const emptyData: AppData = { tasks: [], projects: [], categories: [], profile: { displayName: '', wipLimit: 3 } }
+const emptyData: AppData = { tasks: [], projects: [], categories: [], profile: { displayName: '', wipLimit: 3, avatar: null } }
 
 /** Aplica a mudança de estado mantendo a data de conclusão coerente. */
 function withStatus(t: Task, status: TaskStatus, now: string): Task {
@@ -415,7 +416,8 @@ export function DataProvider({ repo, children }: { repo: DataRepository; childre
   )
 
   const updateProfile = useCallback(
-    (profile: Profile) => {
+    (patch: Partial<Profile>) => {
+      const profile = { ...dataRef.current.profile, ...patch }
       commit({ ...dataRef.current, profile })
       persist(() => repo.saveProfile(profile))
     },

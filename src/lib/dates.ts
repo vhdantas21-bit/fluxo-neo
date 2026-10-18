@@ -76,11 +76,3 @@ export function formatRelative(s: DateOnly): string {
 export function formatShort(s: DateOnly): string {
   return shortDate(fromDateOnly(s))
 }
-
-export function greeting(d = new Date()): string {
-  const h = d.getHours()
-  if (h < 5) return 'Boa noite'
-  if (h < 12) return 'Bom dia'
-  if (h < 19) return 'Boa tarde'
-  return 'Boa noite'
-}

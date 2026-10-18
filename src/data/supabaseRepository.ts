@@ -89,7 +89,7 @@ export class SupabaseRepository implements DataRepository {
       this.fetchAll<SubtaskRow>('subtasks', 'position'),
       this.fetchAll<ProjectRow>('projects', 'created_at'),
       this.fetchAll<CategoryRow>('categories', 'name'),
-      this.db.from('profiles').select('display_name, wip_limit').eq('id', this.userId).maybeSingle(),
+      this.db.from('profiles').select('display_name, wip_limit, avatar').eq('id', this.userId).maybeSingle(),
     ])
     check(profileRes.error)
 
@@ -134,6 +134,7 @@ export class SupabaseRepository implements DataRepository {
       profile: {
         displayName: (profileRes.data?.display_name as string | undefined) ?? '',
         wipLimit: profileRes.data ? ((profileRes.data.wip_limit as number | null) ?? null) : 3,
+        avatar: (profileRes.data?.avatar as string | null | undefined) ?? null,
       },
     }
   }
@@ -208,7 +209,7 @@ export class SupabaseRepository implements DataRepository {
   async saveProfile(profile: Profile) {
     const { error } = await this.db
       .from('profiles')
-      .upsert({ id: this.userId, display_name: profile.displayName, wip_limit: profile.wipLimit })
+      .upsert({ id: this.userId, display_name: profile.displayName, wip_limit: profile.wipLimit, avatar: profile.avatar })
     check(error)
   }
 

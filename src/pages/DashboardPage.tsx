@@ -1,23 +1,22 @@
 import { useMemo, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, CalendarClock, CalendarCheck, ChartColumn, CircleCheck, CircleDashed, Flame, Plus, Timer } from 'lucide-react'
+import { ArrowRight, Camera, CalendarClock, CalendarCheck, ChartColumn, CircleCheck, CircleDashed, Flame, Plus, Timer } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { EmptyState, ProgressBar } from '@/components/ui/misc'
 import { BarChart } from '@/components/charts/BarChart'
 import { ColorDot, DueChip, PriorityBadge, StatusBadge } from '@/components/tasks/TaskBits'
 import { STATUS_THEME } from '@/components/tasks/statusTheme'
 import { useTaskModal } from '@/components/tasks/TaskModalProvider'
-import { useAuth } from '@/auth/AuthProvider'
+import { Avatar, useAvatarPicker, useDisplayName } from '@/components/profile/Avatar'
 import { useData } from '@/store/DataProvider'
 import { activeTasks, completedOn, countByStatus, priorityTasks, todayProgress, upcomingDeadlines } from '@/store/selectors'
 import { completedThisWeekByDay } from '@/store/history'
-import { addDays, formatLong, greeting, isOverdue, startOfWeek, toDateOnly } from '@/lib/dates'
+import { addDays, formatLong, isOverdue, startOfWeek, toDateOnly } from '@/lib/dates'
 import { cn } from '@/lib/utils'
 import type { Task, TaskStatus } from '@/types'
 
 export function DashboardPage() {
   const { data } = useData()
-  const { user } = useAuth()
   const { openNewTask, openTask } = useTaskModal()
   const tasks = useMemo(() => activeTasks(data.tasks), [data.tasks])
   const counts = countByStatus(tasks)
@@ -35,38 +34,64 @@ export function DashboardPage() {
   const createdThisWeek = data.tasks.filter((t) => toDateOnly(new Date(t.createdAt)) >= weekStart).length
   const overdue = tasks.filter((t) => isOverdue(t.dueDate, t.status)).length
 
-  const name = data.profile.displayName || (user?.user_metadata?.full_name as string | undefined) || ''
+  const name = useDisplayName()
+  const avatarPicker = useAvatarPicker()
   const isEmpty = tasks.length === 0
 
   return (
     <div className="mx-auto max-w-6xl">
-      {/* Destaque com as faixas do logotipo */}
+      {/* Destaque: foto e nome do usuário + tarefas em andamento */}
       <section className="relative mb-6 overflow-hidden rounded-2xl border border-navy-line bg-navy-soft px-6 py-7 sm:px-8 sm:py-9">
-        <svg aria-hidden viewBox="40 120 1170 950" className="pointer-events-none absolute right-8 bottom-6 hidden h-40 w-48 opacity-60 sm:block">
-          <path d="M628 140 L703 255 L296 887 L128 887 Z" fill="var(--color-sky)" />
-          <path d="M736 318 L1186 1056 L1007 1056 L651 446 Z" fill="var(--color-navy)" />
-          <path d="M130 944 L868 944 L932 1056 L53 1056 Z" fill="var(--color-ember)" />
-        </svg>
-        <div className="relative flex flex-col items-start gap-5 sm:pr-64">
-          <div>
-            <p className="text-sm text-navy-fg first-letter:uppercase">{formatLong(new Date())}</p>
-            <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">Vamos fazer acontecer</h1>
-            <p className="mt-2 text-fg-muted">
-              {greeting()}
-              {name ? `, ${name.split(' ')[0]}` : ''}.{' '}
-              {counts.doing > 0
-                ? `Você tem ${counts.doing} tarefa${counts.doing > 1 ? 's' : ''} em andamento.`
-                : counts.todo > 0
-                  ? 'Escolha uma tarefa e comece por ela.'
-                  : 'Comece anotando o que está na sua cabeça.'}
-            </p>
+        {avatarPicker.input}
+        <div className="flex items-center justify-between gap-5">
+          <div className="flex min-w-0 flex-col items-start gap-5">
+            <div className="min-w-0">
+              <p className="text-sm text-navy-fg first-letter:uppercase">{formatLong(new Date())}</p>
+              <h1 className="mt-1 truncate text-3xl font-semibold tracking-tight sm:text-4xl">{name || 'Olá!'}</h1>
+              <p className="mt-3 inline-flex items-center gap-2 rounded-lg bg-ember/15 px-3 py-1.5 text-sm text-ember-fg">
+                <Timer size={16} aria-hidden />
+                {counts.doing > 0 ? (
+                  <span>
+                    <strong className="text-base font-semibold text-fg tabular-nums">{counts.doing}</strong>{' '}
+                    {counts.doing === 1 ? 'tarefa em andamento' : 'tarefas em andamento'}
+                  </span>
+                ) : (
+                  <span>Nenhuma tarefa em andamento</span>
+                )}
+              </p>
+            </div>
+            <Link
+              to="/quadro"
+              className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-white shadow-card transition-colors hover:bg-primary-hover"
+            >
+              Ver meu quadro <ArrowRight size={16} aria-hidden />
+            </Link>
           </div>
-          <Link
-            to="/quadro"
-            className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-white shadow-card transition-colors hover:bg-primary-hover"
-          >
-            Ver meu quadro <ArrowRight size={16} aria-hidden />
-          </Link>
+
+          <div className="flex shrink-0 flex-col items-center gap-2">
+            <button
+              type="button"
+              onClick={avatarPicker.choose}
+              disabled={avatarPicker.busy}
+              className="group relative rounded-full ring-4 ring-navy-line focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-text"
+              aria-label={avatarPicker.hasPhoto ? 'Trocar foto de perfil' : 'Adicionar foto de perfil'}
+              title={avatarPicker.hasPhoto ? 'Trocar foto' : 'Adicionar foto'}
+            >
+              <Avatar src={data.profile.avatar} name={name} className="h-20 w-20 text-[40px] sm:h-32 sm:w-32 sm:text-[64px]" />
+              <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/55 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                {avatarPicker.busy ? (
+                  <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" aria-hidden />
+                ) : (
+                  <Camera size={22} aria-hidden />
+                )}
+              </span>
+            </button>
+            {!avatarPicker.hasPhoto && (
+              <button type="button" onClick={avatarPicker.choose} className="text-xs text-navy-fg hover:text-fg hover:underline">
+                Adicionar foto
+              </button>
+            )}
+          </div>
         </div>
       </section>
 

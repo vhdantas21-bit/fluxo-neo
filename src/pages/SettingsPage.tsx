@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import { Check, Download, HardDrive, LogOut, Plus, Trash } from 'lucide-react'
+import { Camera, Check, Download, HardDrive, LogOut, Plus, Trash } from 'lucide-react'
 import { useAuth } from '@/auth/AuthProvider'
+import { Avatar, useAvatarPicker, useDisplayName } from '@/components/profile/Avatar'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Form'
 import { Card, PageHeader } from '@/components/ui/misc'
@@ -24,12 +25,14 @@ export function SettingsPage() {
   const { data, updateProfile, createCategory, updateCategory, deleteCategory, repoKind } = useData()
   const confirm = useConfirm()
   const toast = useToast()
-  const [name, setName] = useState(data.profile.displayName)
+  const displayName = useDisplayName()
+  const avatarPicker = useAvatarPicker()
+  const [name, setName] = useState(data.profile.displayName || displayName)
   const [newCat, setNewCat] = useState('')
 
   const saveProfile = (e: FormEvent) => {
     e.preventDefault()
-    updateProfile({ ...data.profile, displayName: name.trim().slice(0, 80) })
+    updateProfile({ displayName: name.trim().slice(0, 80) })
     toast.success('Perfil atualizado.')
   }
 
@@ -61,11 +64,40 @@ export function SettingsPage() {
       <div className="flex flex-col gap-4">
         <Card>
           <h2 className="mb-4 text-sm font-semibold">Perfil</h2>
+          <div className="mb-5 flex items-center gap-4">
+            {avatarPicker.input}
+            <button
+              type="button"
+              onClick={avatarPicker.choose}
+              disabled={avatarPicker.busy}
+              className="group relative rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+              aria-label={avatarPicker.hasPhoto ? 'Trocar foto de perfil' : 'Adicionar foto de perfil'}
+            >
+              <Avatar src={data.profile.avatar} name={displayName} className="h-20 w-20 text-[40px]" />
+              <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/55 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                <Camera size={20} aria-hidden />
+              </span>
+            </button>
+            <div className="flex flex-col gap-2">
+              <p className="text-[13px] text-fg-muted">Foto de perfil</p>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" onClick={avatarPicker.choose} loading={avatarPicker.busy}>
+                  <Camera size={14} aria-hidden /> {avatarPicker.hasPhoto ? 'Trocar foto' : 'Escolher foto'}
+                </Button>
+                {avatarPicker.hasPhoto && (
+                  <Button size="sm" variant="ghost" onClick={avatarPicker.remove}>
+                    <Trash size={14} aria-hidden /> Remover
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-fg-subtle">JPG, PNG ou WebP. A foto é recortada em quadrado automaticamente.</p>
+            </div>
+          </div>
           <form onSubmit={saveProfile} className="flex flex-col gap-4 sm:flex-row sm:items-end">
-            <Field label="Como você quer ser chamado" htmlFor="profile-name" className="flex-1">
+            <Field label="Seu nome" htmlFor="profile-name" hint="Aparece no topo da página Início." className="flex-1">
               <Input id="profile-name" value={name} maxLength={80} onChange={(e) => setName(e.target.value)} placeholder="Seu nome" />
             </Field>
-            <Button type="submit" variant="primary" disabled={name.trim() === data.profile.displayName}>
+            <Button type="submit" variant="primary" disabled={!name.trim() || name.trim() === data.profile.displayName}>
               <Check size={16} aria-hidden /> Salvar
             </Button>
           </form>
@@ -81,7 +113,7 @@ export function SettingsPage() {
               id="wip"
               value={data.profile.wipLimit ?? ''}
               onChange={(e) => {
-                updateProfile({ ...data.profile, wipLimit: e.target.value ? Number(e.target.value) : null })
+                updateProfile({ wipLimit: e.target.value ? Number(e.target.value) : null })
                 toast.success('Limite atualizado.')
               }}
             >

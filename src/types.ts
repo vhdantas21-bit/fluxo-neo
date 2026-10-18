@@ -59,6 +59,8 @@ export interface Profile {
   displayName: string
   /** Limite de tarefas em "Fazendo" (WIP). null = sem limite. */
   wipLimit: number | null
+  /** Foto de perfil como data URL JPEG já reduzida (ver lib/avatar.ts). null = sem foto. */
+  avatar: string | null
 }
 
 export interface AppData {

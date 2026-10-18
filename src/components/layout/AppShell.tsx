@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { Check, Ellipsis, HardDrive, LogOut, Plus, Search } from 'lucide-react'
 import { useAuth } from '@/auth/AuthProvider'
+import { Avatar, useDisplayName } from '@/components/profile/Avatar'
 import { useData } from '@/store/DataProvider'
 import { useTaskModal } from '@/components/tasks/TaskModalProvider'
 import { Button } from '@/components/ui/Button'
@@ -177,7 +178,7 @@ function Sidebar() {
   const { mode, user, signOut } = useAuth()
   const { data } = useData()
   const toast = useToast()
-  const name = data.profile.displayName || user?.email || ''
+  const name = useDisplayName()
 
   return (
     <aside className="sticky top-16 hidden h-[calc(100dvh-4rem)] w-60 shrink-0 flex-col border-r border-line px-3 py-5 lg:flex">
@@ -215,11 +216,11 @@ function Sidebar() {
           </Link>
         ) : (
           <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-deep text-xs font-semibold uppercase">
-              {name.slice(0, 1)}
-            </span>
+            <Link to="/configuracoes" className="rounded-full" aria-label="Editar perfil" title="Editar perfil">
+              <Avatar src={data.profile.avatar} name={name} className="h-9 w-9 text-[18px]" />
+            </Link>
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-[13px] font-medium">{data.profile.displayName || 'Sem nome'}</span>
+              <span className="block truncate text-[13px] font-medium">{name || 'Sem nome'}</span>
               <span className="block truncate text-xs text-fg-subtle">{user?.email}</span>
             </span>
             <button
