@@ -41,7 +41,7 @@ export function DashboardPage() {
   return (
     <div className="mx-auto max-w-6xl">
       {/* Destaque: foto e nome do usuário + tarefas em andamento */}
-      <section className="relative mb-6 overflow-hidden rounded-2xl border border-navy-line bg-navy-soft px-6 py-7 sm:px-8 sm:py-9">
+      <section className="relative mb-6 overflow-hidden rounded-2xl border border-deep bg-deep px-6 py-7 sm:px-8 sm:py-9">
         {avatarPicker.input}
         <div className="flex items-center justify-between gap-5">
           <div className="flex min-w-0 flex-col items-start gap-5">
@@ -73,7 +73,7 @@ export function DashboardPage() {
               type="button"
               onClick={avatarPicker.choose}
               disabled={avatarPicker.busy}
-              className="group relative rounded-full ring-4 ring-navy-line focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-text"
+              className="group relative rounded-full ring-4 ring-fg/15 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-text"
               aria-label={avatarPicker.hasPhoto ? 'Trocar foto de perfil' : 'Adicionar foto de perfil'}
               title={avatarPicker.hasPhoto ? 'Trocar foto' : 'Adicionar foto'}
             >
@@ -205,8 +205,8 @@ export function DashboardPage() {
 /** Acento de cada card: azul da marca (A Fazer), laranja (Fazendo), branco/cinza claro (Feito). */
 const statAccent: Record<Exclude<TaskStatus, 'backlog'>, { border: string; text: string }> = {
   todo: { border: 'border-t-primary', text: 'text-primary-text' },
-  doing: { border: 'border-t-ember', text: 'text-ember-fg' },
-  done: { border: 'border-t-fg-muted', text: 'text-fg-muted' },
+  doing: { border: 'border-t-accent', text: 'text-ember-fg' },
+  done: { border: 'border-t-fg', text: 'text-fg' },
 }
 
 function Stat({ status, icon, label, value, hint }: { status: Exclude<TaskStatus, 'backlog'>; icon: ReactNode; label: string; value: number; hint: string }) {
@@ -228,8 +228,8 @@ function Stat({ status, icon, label, value, hint }: { status: Exclude<TaskStatus
 }
 
 const panelTone = {
-  sky: { border: 'border-t-sky', icon: 'text-sky' },
-  ember: { border: 'border-t-ember', icon: 'text-ember' },
+  sky: { border: 'border-t-primary', icon: 'text-primary-text' },
+  ember: { border: 'border-t-accent', icon: 'text-accent-text' },
   navy: { border: 'border-t-navy', icon: 'text-navy-fg' },
 }
 

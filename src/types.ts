@@ -103,10 +103,11 @@ export const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
 
 /** Cores identificadoras derivadas exclusivamente da paleta da marca. */
 export const PALETTE_SWATCHES = [
-  { value: '#4D7BD8', label: 'Azul claro' },
-  { value: '#8FAEEB', label: 'Azul pastel' },
-  { value: '#5A70B4', label: 'Azul escuro' },
-  { value: '#E07A55', label: 'Laranja' },
-  { value: '#F0A88C', label: 'Laranja pastel' },
-  { value: '#A3A3A3', label: 'Cinza' },
+  { value: '#5677C4', label: 'Azul' },
+  { value: '#9DB3E6', label: 'Azul claro' },
+  { value: '#5B6EAC', label: 'Azul escuro' },
+  { value: '#DE6A43', label: 'Laranja' },
+  { value: '#F2A88B', label: 'Laranja claro' },
+  { value: '#8F8F8F', label: 'Cinza' },
+  { value: '#E5E5E5', label: 'Branco' },
 ] as const

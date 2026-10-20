@@ -373,7 +373,7 @@ export function TaskModal({ open, taskId, defaults, onClose }: Props) {
                   type="checkbox"
                   checked={s.done}
                   onChange={() => set('subtasks', draft.subtasks.map((x) => (x.id === s.id ? { ...x, done: !x.done } : x)))}
-                  className="h-4 w-4 shrink-0 accent-[#174CB5]"
+                  className="h-4 w-4 shrink-0 accent-[#2C50A1]"
                   aria-label={`Concluir subtarefa ${s.title}`}
                 />
                 <input

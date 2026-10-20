@@ -104,7 +104,7 @@ export function SunMoonThemeToggle({
         width: size,
         height: size,
         transition: `background-color ${duration}ms ease`,
-        backgroundColor: sky ? (isDark ? '#0b1b44' : '#cfe0fa') : undefined,
+        backgroundColor: sky ? (isDark ? '#132967' : '#dfe7f6') : undefined,
         ...style,
       }}
       {...rest}
@@ -119,7 +119,7 @@ export function SunMoonThemeToggle({
       <Sun
         aria-hidden
         size={icon}
-        className={cn('absolute', sky ? 'text-[#d9653d]' : 'text-accent-text', classNames?.sun)}
+        className={cn('absolute', sky ? 'text-[#de6a43]' : 'text-accent-text', classNames?.sun)}
         style={{
           transition,
           opacity: isDark ? 0 : 1,
@@ -129,7 +129,7 @@ export function SunMoonThemeToggle({
       <Moon
         aria-hidden
         size={icon}
-        className={cn('absolute', sky ? 'text-[#e8eefb]' : 'text-primary-text', classNames?.moon)}
+        className={cn('absolute', sky ? 'text-[#fefefe]' : 'text-primary-text', classNames?.moon)}
         style={{
           transition,
           opacity: isDark ? 1 : 0,

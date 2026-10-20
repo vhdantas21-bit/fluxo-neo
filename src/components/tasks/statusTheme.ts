@@ -1,9 +1,9 @@
 import type { TaskStatus } from '@/types'
 
 /**
- * Cor de cada estado, em tons pastel escuros da marca:
- * A Fazer = azul claro, Fazendo = laranja, Feito = azul escuro, Backlog = neutro.
- * As classes estão escritas por extenso para o Tailwind as encontrar.
+ * Cor de cada estado, seguindo a paleta da marca:
+ * A Fazer = azul, Fazendo = laranja, Feito = branco (neutro, "finalizado"),
+ * Backlog = cinza. As classes estão escritas por extenso para o Tailwind as encontrar.
  */
 export const STATUS_THEME: Record<
   TaskStatus,
@@ -15,30 +15,30 @@ export const STATUS_THEME: Record<
     fg: 'text-fg-muted',
     dot: 'bg-fg-subtle',
     accent: 'border-t-line-strong',
-    chip: 'bg-surface-3 text-fg-muted',
+    chip: 'bg-line-strong text-fg',
   },
   todo: {
     soft: 'bg-sky-soft',
     line: 'border-sky-line',
     fg: 'text-sky-fg',
     dot: 'bg-sky',
-    accent: 'border-t-sky',
-    chip: 'bg-sky/15 text-sky-fg',
+    accent: 'border-t-primary',
+    chip: 'bg-primary/25 text-sky-fg',
   },
   doing: {
     soft: 'bg-ember-soft',
     line: 'border-ember-line',
     fg: 'text-ember-fg',
     dot: 'bg-ember',
-    accent: 'border-t-ember',
-    chip: 'bg-ember/15 text-ember-fg',
+    accent: 'border-t-accent',
+    chip: 'bg-accent/20 text-ember-fg',
   },
   done: {
-    soft: 'bg-navy-soft',
-    line: 'border-navy-line',
-    fg: 'text-navy-fg',
-    dot: 'bg-navy',
-    accent: 'border-t-navy',
-    chip: 'bg-navy/20 text-navy-fg',
+    soft: 'bg-surface',
+    line: 'border-line-strong',
+    fg: 'text-fg',
+    dot: 'bg-fg',
+    accent: 'border-t-fg',
+    chip: 'bg-fg/10 text-fg',
   },
 }

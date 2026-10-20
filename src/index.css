@@ -1,54 +1,56 @@
 @import 'tailwindcss';
 
 /*
- * Identidade visual FLUXO NEO — cores do logotipo:
- * preto #010101 (fundo carvão #171717) · azul claro #174CB5 · azul escuro #012367
- * · laranja-avermelhado #CF3102.
- * Os tons "-soft / -line / -fg" são versões pastel escuras das mesmas cores,
- * usadas para dar cor às áreas sem pesar; os "-text/-fg" garantem contraste
- * WCAG AA sobre o fundo escuro.
+ * Identidade visual FLUXO NEO — paleta de referência:
+ * preto #171717 (fundo) · cinza #424242 (bordas, neutro) · azul #2C50A1 (ação,
+ * A Fazer) · azul escuro #132967 (selecionado, destaque) · laranja #C43004
+ * (urgência, Fazendo) · branco #FEFEFE (texto, Feito).
+ * Proporção 60-30-10: preto nos fundos, cinza/azul escuro na estrutura, azul e
+ * laranja só onde pede atenção. Os tons "-text/-fg" são versões mais claras das
+ * mesmas cores, para texto e ícones com contraste WCAG AA sobre o fundo escuro.
+ * O logotipo mantém as cores próprias (ver components/layout/Logo.tsx).
  */
 @theme {
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   --color-bg: #171717;
   --color-surface: #1e1e1e;
-  --color-surface-2: #252525;
-  --color-surface-3: #2d2d2d;
-  --color-line: #2b2b2b;
-  --color-line-strong: #3a3a3a;
+  --color-surface-2: #262626;
+  --color-surface-3: #303030;
+  --color-line: #2c2c2c;
+  --color-line-strong: #424242;
 
-  --color-fg: #fafafa;
-  --color-fg-muted: #b8b8b8;
-  --color-fg-subtle: #8c8c8c;
+  --color-fg: #fefefe;
+  --color-fg-muted: #bdbdbd;
+  --color-fg-subtle: #8f8f8f;
 
   /* Cores da marca (sólidas) */
-  --color-primary: #174cb5;
-  --color-primary-hover: #1f5acb;
-  --color-primary-text: #9db8ee;
-  --color-deep: #012367;
-  --color-deep-hover: #0a2f80;
-  --color-accent: #cf3102;
-  --color-accent-hover: #e03e0e;
-  --color-accent-text: #f4906d;
+  --color-primary: #2c50a1;
+  --color-primary-hover: #365eb6;
+  --color-primary-text: #9db3e6;
+  --color-deep: #132967;
+  --color-deep-hover: #1a3480;
+  --color-accent: #c43004;
+  --color-accent-hover: #d63b0b;
+  --color-accent-text: #f2916f;
 
-  /* Pastel escuro — azul claro (A Fazer) */
-  --color-sky: #7096e0;
-  --color-sky-soft: #1a2540;
-  --color-sky-line: #2c416e;
-  --color-sky-fg: #b0c7f4;
+  /* Tons do azul (A Fazer) */
+  --color-sky: #7393da;
+  --color-sky-soft: #1b2338;
+  --color-sky-line: #2f4373;
+  --color-sky-fg: #b3c5ee;
 
-  /* Pastel escuro — laranja-avermelhado (Fazendo) */
-  --color-ember: #e07a55;
-  --color-ember-soft: #2a1d18;
-  --color-ember-line: #553222;
-  --color-ember-fg: #f4b098;
+  /* Tons do laranja (Fazendo) */
+  --color-ember: #de6a43;
+  --color-ember-soft: #2a1c17;
+  --color-ember-line: #5a2c1b;
+  --color-ember-fg: #f4ad93;
 
-  /* Pastel escuro — azul escuro (Feito) */
-  --color-navy: #5a70b4;
-  --color-navy-soft: #161d31;
-  --color-navy-line: #29355c;
-  --color-navy-fg: #a9b7e0;
+  /* Tons do azul escuro (destaques) */
+  --color-navy: #5b6eac;
+  --color-navy-soft: #141b30;
+  --color-navy-line: #26315a;
+  --color-navy-fg: #a9b6de;
 
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.35);
   --shadow-pop: 0 12px 32px -8px rgb(0 0 0 / 0.6), 0 2px 6px rgb(0 0 0 / 0.35);
@@ -131,40 +133,40 @@
 :root[data-theme='light'] {
   color-scheme: light;
 
-  --color-bg: #f4f5f7;
+  --color-bg: #f5f5f6;
   --color-surface: #ffffff;
-  --color-surface-2: #f1f3f6;
-  --color-surface-3: #e6e9ee;
-  --color-line: #e2e5ea;
-  --color-line-strong: #cdd2da;
+  --color-surface-2: #f2f2f4;
+  --color-surface-3: #e7e7ea;
+  --color-line: #e2e2e5;
+  --color-line-strong: #c9c9ce;
 
-  --color-fg: #15171c;
-  --color-fg-muted: #474e5c;
-  --color-fg-subtle: #646b78;
+  --color-fg: #171717;
+  --color-fg-muted: #424242;
+  --color-fg-subtle: #616161;
 
-  --color-primary: #174cb5;
-  --color-primary-hover: #123f99;
-  --color-primary-text: #174cb5;
-  --color-deep: #dbe5f8;
-  --color-deep-hover: #cbd9f4;
-  --color-accent: #cf3102;
-  --color-accent-hover: #b82b02;
-  --color-accent-text: #ad2a05;
+  --color-primary: #2c50a1;
+  --color-primary-hover: #234389;
+  --color-primary-text: #2c50a1;
+  --color-deep: #e1e7f5;
+  --color-deep-hover: #d3dcf0;
+  --color-accent: #c43004;
+  --color-accent-hover: #a92a04;
+  --color-accent-text: #a82904;
 
-  --color-sky: #4d7bd8;
-  --color-sky-soft: #eaf0fc;
-  --color-sky-line: #c6d6f4;
-  --color-sky-fg: #1c47a2;
+  --color-sky: #4f72c2;
+  --color-sky-soft: #ecf0f9;
+  --color-sky-line: #c8d3ee;
+  --color-sky-fg: #23468f;
 
-  --color-ember: #d9653d;
-  --color-ember-soft: #fcefe9;
-  --color-ember-line: #f1cbbb;
-  --color-ember-fg: #9e340d;
+  --color-ember: #d2582f;
+  --color-ember-soft: #fbeee9;
+  --color-ember-line: #f0c8b9;
+  --color-ember-fg: #9a2f0b;
 
-  --color-navy: #4a5f9f;
-  --color-navy-soft: #eceff8;
-  --color-navy-line: #cbd2ea;
-  --color-navy-fg: #2e3d78;
+  --color-navy: #44579a;
+  --color-navy-soft: #edf0f8;
+  --color-navy-line: #c9d0e8;
+  --color-navy-fg: #1f2f6b;
 
   --shadow-card: 0 1px 2px rgb(16 24 40 / 0.06);
   --shadow-pop: 0 12px 32px -8px rgb(16 24 40 / 0.18), 0 2px 6px rgb(16 24 40 / 0.08);

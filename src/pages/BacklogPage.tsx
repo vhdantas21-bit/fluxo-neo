@@ -246,7 +246,7 @@ export function BacklogPage() {
                 if (el) el.indeterminate = selectedTasks.length > 0 && !allSelected
               }}
               onChange={() => setSelected(allSelected ? new Set() : new Set(list.map((t) => t.id)))}
-              className="h-4 w-4 accent-[#174CB5]"
+              className="h-4 w-4 accent-[#2C50A1]"
               aria-label="Selecionar todas"
             />
             {list.length} {list.length === 1 ? 'item' : 'itens'}
@@ -299,7 +299,7 @@ function BacklogRow({ task, archived, selected, onToggle, onOpen, onPromote, onR
         type="checkbox"
         checked={selected}
         onChange={onToggle}
-        className="h-4 w-4 shrink-0 accent-[#174CB5]"
+        className="h-4 w-4 shrink-0 accent-[#2C50A1]"
         aria-label={`Selecionar ${task.title}`}
       />
       <button type="button" onClick={onOpen} className="min-w-0 flex-1 text-left">

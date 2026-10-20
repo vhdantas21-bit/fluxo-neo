@@ -18,8 +18,8 @@ interface Props {
   highlight?: number
 }
 
-/** Cor única da série (tom claro do azul principal, validado contra o fundo escuro). */
-export const SERIES_COLOR = '#7096E0'
+/** Cor única da série: tom claro do azul da marca (contraste ≥ 3:1 nos dois temas). */
+export const SERIES_COLOR = 'var(--color-sky)'
 
 /**
  * Gráfico de barras verticais de uma série. Barras finas ancoradas na base,
