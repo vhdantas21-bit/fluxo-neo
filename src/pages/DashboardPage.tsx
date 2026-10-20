@@ -41,7 +41,7 @@ export function DashboardPage() {
   return (
     <div className="mx-auto max-w-6xl">
       {/* Destaque: foto e nome do usuário + tarefas em andamento */}
-      <section className="relative mb-6 overflow-hidden rounded-2xl border border-deep bg-deep px-6 py-7 sm:px-8 sm:py-9">
+      <section className="relative mb-6 overflow-hidden rounded-2xl border border-line bg-surface px-6 py-7 sm:px-8 sm:py-9">
         {avatarPicker.input}
         <div className="flex items-center justify-between gap-5">
           <div className="flex min-w-0 flex-col items-start gap-5">
@@ -73,7 +73,7 @@ export function DashboardPage() {
               type="button"
               onClick={avatarPicker.choose}
               disabled={avatarPicker.busy}
-              className="group relative rounded-full ring-4 ring-fg/15 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-text"
+              className="group relative rounded-full ring-4 ring-line-strong focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-text"
               aria-label={avatarPicker.hasPhoto ? 'Trocar foto de perfil' : 'Adicionar foto de perfil'}
               title={avatarPicker.hasPhoto ? 'Trocar foto' : 'Adicionar foto'}
             >
