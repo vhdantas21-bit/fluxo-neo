@@ -5,24 +5,25 @@ import { formatRelative, isDueSoon, isOverdue } from '@/lib/dates'
 import { cn } from '@/lib/utils'
 import { STATUS_THEME } from './statusTheme'
 
+/** Etiquetas preenchidas: laranja (alta), azul (média), cinza (baixa). */
 const priorityStyle: Record<Priority, string> = {
-  high: 'bg-accent/15 text-accent-text ring-accent/30',
-  medium: 'bg-primary/20 text-primary-text ring-primary/40',
-  low: 'bg-surface-3 text-fg-muted ring-line-strong',
+  high: 'bg-accent text-white',
+  medium: 'bg-primary text-white',
+  low: 'bg-line-strong text-fg',
 }
 
 export function PriorityBadge({ priority }: { priority: Priority }) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-medium ring-1 ring-inset',
+        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold',
         priorityStyle[priority],
       )}
     >
       <span
         className={cn(
           'h-1.5 w-1.5 rounded-full',
-          priority === 'high' ? 'bg-accent' : priority === 'medium' ? 'bg-primary-text' : 'bg-fg-subtle',
+          priority === 'low' ? 'bg-fg-muted' : 'bg-white/85',
         )}
         aria-hidden
       />

@@ -85,7 +85,7 @@ export function AppShell() {
               className={({ isActive }) =>
                 cn(
                   'flex items-center gap-3 rounded-lg px-3 py-3 text-sm',
-                  isActive ? 'bg-deep text-fg' : 'text-fg-muted hover:bg-surface-2',
+                  isActive ? 'bg-primary text-white' : 'text-fg-muted hover:bg-surface-2',
                 )
               }
             >
@@ -105,8 +105,9 @@ function Topbar({ searchOpen, onSearchOpenChange }: { searchOpen: boolean; onSea
   const location = useLocation()
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur supports-[backdrop-filter]:bg-bg/80">
-      <div className="flex h-16 items-center gap-2 px-4 sm:gap-3 sm:px-6 lg:px-0">
+    <header className="sticky top-0 z-30 overflow-hidden border-b border-line bg-bg/95 backdrop-blur supports-[backdrop-filter]:bg-bg/80">
+      <BrandStripes />
+      <div className="relative flex h-16 items-center gap-2 px-4 sm:gap-3 sm:px-6 lg:px-0">
         <Link to="/" className="shrink-0 rounded-lg lg:w-60 lg:px-6" aria-label="FLUXO NEO — início">
           <Logo className="hidden sm:flex" />
           <LogoMark className="sm:hidden" />
@@ -137,6 +138,24 @@ function Topbar({ searchOpen, onSearchOpenChange }: { searchOpen: boolean; onSea
         </div>
       </div>
     </header>
+  )
+}
+
+/** Faixas diagonais da paleta (assinatura visual da marca), só decorativas. */
+function BrandStripes() {
+  const stripes = ['#2C50A1', '#132967', '#C43004', '#FEFEFE', '#424242']
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 200 64"
+      preserveAspectRatio="none"
+      className="pointer-events-none absolute inset-y-0 left-[184px] hidden h-full w-36 md:block lg:left-[272px] lg:w-44"
+    >
+      {stripes.map((color, i) => {
+        const x = i * 30
+        return <polygon key={color} points={`${x},64 ${x + 24},64 ${x + 60},0 ${x + 36},0`} fill={color} />
+      })}
+    </svg>
   )
 }
 
@@ -214,15 +233,22 @@ function Sidebar() {
             end={to === '/'}
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                isActive ? 'bg-deep text-fg' : 'text-fg-muted hover:bg-surface hover:text-fg',
+                'relative flex items-center gap-3 overflow-hidden rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                isActive ? 'bg-primary font-semibold text-white shadow-card' : 'text-fg-muted hover:bg-surface hover:text-fg',
               )
             }
           >
             {({ isActive }) => (
               <>
-                <Icon size={18} className={isActive ? 'text-primary-text' : 'text-fg-subtle'} aria-hidden />
+                <Icon size={18} className={isActive ? 'text-white' : 'text-fg-subtle'} aria-hidden />
                 {label}
+                {isActive && (
+                  // Corte diagonal com as cores da marca, como nas faixas do topo.
+                  <span aria-hidden className="pointer-events-none absolute inset-y-0 right-2 flex gap-1">
+                    <span className="h-full w-1.5 -skew-x-[24deg] bg-accent" />
+                    <span className="h-full w-1.5 -skew-x-[24deg] bg-white/85" />
+                  </span>
+                )}
               </>
             )}
           </NavLink>

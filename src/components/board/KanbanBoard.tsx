@@ -26,6 +26,31 @@ const isColumn = (id: UniqueIdentifier): id is BoardStatus => (BOARD_STATUSES as
 
 const columnIcon = { todo: CircleDashed, doing: Timer, done: CircleCheck }
 
+/** Moldura, faixa superior e destaques de cada coluna (Feito em tom branco). */
+const columnStyle: Record<BoardStatus, { frame: string; head: string; title: string; count: string; add: string }> = {
+  todo: {
+    frame: 'border-primary/60 border-t-primary bg-sky-soft',
+    head: 'bg-primary/15',
+    title: 'text-sky-fg',
+    count: 'bg-primary text-white',
+    add: 'text-sky-fg',
+  },
+  doing: {
+    frame: 'border-accent/60 border-t-accent bg-ember-soft',
+    head: 'bg-accent/15',
+    title: 'text-ember-fg',
+    count: 'bg-accent text-white',
+    add: 'text-ember-fg',
+  },
+  done: {
+    frame: 'border-fg/35 border-t-fg bg-surface',
+    head: 'bg-fg/[0.06]',
+    title: 'text-fg',
+    count: 'bg-fg text-bg',
+    add: 'text-fg-muted',
+  },
+}
+
 const emptyCopy: Record<BoardStatus, { title: string; text: string }> = {
   todo: { title: 'Nada por começar', text: 'Adicione aqui ideias e objetivos prontos para executar, ou traga-os do Backlog.' },
   doing: { title: 'Nenhuma tarefa em andamento', text: 'Arraste para cá a tarefa em que você vai trabalhar agora. Foque em poucas de cada vez.' },
@@ -192,44 +217,43 @@ function Column({ status, ids, byId, hiddenOnMobile, filtered, wipLimit, onOpen 
   const overLimit = wipLimit !== null && ids.length > wipLimit
   const headingId = `col-${status}`
   const theme = STATUS_THEME[status]
+  const style = columnStyle[status]
 
   return (
     <section
       aria-labelledby={headingId}
       className={cn(
-        'flex min-h-[50vh] flex-col rounded-2xl border border-t-[3px] transition-[box-shadow,filter] duration-150 md:min-h-0',
-        theme.soft,
-        theme.line,
-        theme.accent,
+        'flex min-h-[50vh] flex-col overflow-hidden rounded-2xl border border-t-[5px] shadow-card transition-[box-shadow,filter] duration-150 md:min-h-0',
+        style.frame,
         isOver && 'shadow-pop brightness-125',
         hiddenOnMobile && 'hidden md:flex',
       )}
     >
-      <header className="flex items-center justify-between gap-2 px-4 pt-4 pb-3">
+      <header className={cn('mb-3 flex items-center justify-between gap-2 px-4 pt-3.5 pb-3', style.head)}>
         <div className="min-w-0">
-          <h2 id={headingId} className="flex items-center gap-2 text-[13px] font-semibold tracking-wide uppercase">
-            <Icon size={15} className={theme.fg} aria-hidden />
-            <span className={theme.fg}>{STATUS_LABEL[status]}</span>
+          <h2 id={headingId} className="flex items-center gap-2 text-sm font-bold tracking-wide uppercase">
+            <Icon size={19} strokeWidth={2.25} className={style.title} aria-hidden />
+            <span className={style.title}>{STATUS_LABEL[status]}</span>
             <span
               className={cn(
-                'rounded-md px-1.5 py-px text-xs font-medium tabular-nums normal-case',
-                overLimit ? 'bg-accent/20 text-accent-text' : theme.chip,
+                'rounded-full px-2 py-px text-xs font-semibold tabular-nums normal-case',
+                overLimit ? 'bg-accent text-white ring-2 ring-accent-text/60' : style.count,
               )}
               title={wipLimit !== null ? `Limite recomendado: ${wipLimit}` : undefined}
             >
               {ids.length}
-              {wipLimit !== null && <span className="text-fg-subtle">/{wipLimit}</span>}
+              {wipLimit !== null && <span className="opacity-75">/{wipLimit}</span>}
               <span className="sr-only"> tarefas</span>
             </span>
           </h2>
-          <p className="mt-0.5 truncate text-xs text-fg-subtle">
+          <p className="mt-0.5 truncate text-xs text-fg-muted">
             {overLimit ? 'Acima do limite — termine uma antes de começar outra.' : STATUS_HINT[status]}
           </p>
         </div>
         <button
           type="button"
           onClick={() => openNewTask({ status })}
-          className={cn('rounded-lg p-1.5 transition-colors hover:bg-fg/5', theme.fg)}
+          className={cn('rounded-lg p-1.5 transition-colors hover:bg-fg/10', style.title)}
           aria-label={`Adicionar tarefa em ${STATUS_LABEL[status]}`}
           title="Adicionar tarefa"
         >
@@ -252,7 +276,7 @@ function Column({ status, ids, byId, hiddenOnMobile, filtered, wipLimit, onOpen 
               {!filtered && <p className="max-w-60 text-xs leading-relaxed text-fg-subtle">{emptyCopy[status].text}</p>}
             </div>
           )}
-          <QuickAdd status={status} />
+          <QuickAdd status={status} className={style.add} />
         </div>
       </SortableContext>
     </section>
@@ -276,7 +300,7 @@ function SortableCard({ task, onOpen }: { task: Task; onOpen: () => void }) {
   )
 }
 
-function QuickAdd({ status }: { status: BoardStatus }) {
+function QuickAdd({ status, className }: { status: BoardStatus; className?: string }) {
   const { createTask } = useData()
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState('')
@@ -304,9 +328,9 @@ function QuickAdd({ status }: { status: BoardStatus }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-auto flex items-center gap-2 rounded-lg px-2 py-2 text-[13px] text-fg-muted transition-colors hover:bg-fg/5 hover:text-fg"
+        className={cn('mt-auto flex items-center gap-2 rounded-lg px-2 py-2 text-[13px] font-semibold transition-colors hover:bg-fg/10', className)}
       >
-        <Plus size={15} /> Adicionar tarefa
+        <Plus size={16} strokeWidth={2.5} /> Adicionar tarefa
       </button>
     )
 

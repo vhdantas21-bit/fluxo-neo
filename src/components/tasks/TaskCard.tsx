@@ -21,6 +21,13 @@ interface TaskCardProps extends HTMLAttributes<HTMLDivElement> {
   style?: CSSProperties
 }
 
+/** Cor da borda esquerda por prioridade: laranja (alta), azul (média), cinza (baixa). */
+const priorityEdge: Record<Task['priority'], string> = {
+  high: 'border-l-accent hover:border-l-accent',
+  medium: 'border-l-primary hover:border-l-primary',
+  low: 'border-l-line-strong hover:border-l-line-strong',
+}
+
 export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(function TaskCard(
   { task, onOpen, showStatusSelect = 'mobile', showStatus, hideProject, dragging, overlay, className, style, onKeyDown, ...rest },
   ref,
@@ -43,12 +50,14 @@ export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(function TaskC
       ref={ref}
       style={style}
       className={cn(
-        'group relative rounded-xl border bg-surface-2 p-3.5 text-left shadow-card transition-[border-color,box-shadow,opacity] duration-150',
+        'group relative rounded-xl border border-l-4 bg-surface-2 p-3.5 pl-4 text-left shadow-card transition-[border-color,box-shadow,opacity] duration-150',
         'cursor-pointer hover:border-line-strong focus-visible:outline-2 focus-visible:outline-primary-text',
         overdue ? 'border-accent/40' : 'border-line',
         task.status === 'done' && 'bg-surface',
         dragging && 'opacity-40',
         overlay && 'rotate-[1.5deg] cursor-grabbing border-primary/60 shadow-pop',
+        // A borda esquerda indica a prioridade (definida por último para prevalecer).
+        priorityEdge[task.priority],
         className,
       )}
       onClick={onOpen}

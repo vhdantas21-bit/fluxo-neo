@@ -35,7 +35,7 @@ export const STATUS_THEME: Record<
   },
   done: {
     soft: 'bg-surface',
-    line: 'border-line-strong',
+    line: 'border-fg/30',
     fg: 'text-fg',
     dot: 'bg-fg',
     accent: 'border-t-fg',
