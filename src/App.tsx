@@ -15,7 +15,7 @@ import { BoardPage } from '@/pages/BoardPage'
 import { BacklogPage } from '@/pages/BacklogPage'
 import { ProjectsPage } from '@/pages/ProjectsPage'
 import { ProjectDetailPage } from '@/pages/ProjectDetailPage'
-import { AgendaPage } from '@/pages/AgendaPage'
+import { CalendarPage } from '@/pages/CalendarPage'
 import { StatsPage } from '@/pages/StatsPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { SearchPage } from '@/pages/SearchPage'
@@ -74,7 +74,8 @@ function AppRoutes() {
           <Route path="backlog" element={<BacklogPage />} />
           <Route path="projetos" element={<ProjectsPage />} />
           <Route path="projetos/:id" element={<ProjectDetailPage />} />
-          <Route path="agenda" element={<AgendaPage />} />
+          <Route path="calendario" element={<CalendarPage />} />
+          <Route path="agenda" element={<Navigate to="/calendario" replace />} />
           <Route path="estatisticas" element={<StatsPage />} />
           <Route path="configuracoes" element={<SettingsPage />} />
           <Route path="pesquisa" element={<SearchPage />} />

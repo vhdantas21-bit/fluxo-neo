@@ -229,7 +229,7 @@ function Column({ status, ids, byId, hiddenOnMobile, filtered, wipLimit, onOpen 
         <button
           type="button"
           onClick={() => openNewTask({ status })}
-          className={cn('rounded-lg p-1.5 transition-colors hover:bg-white/5', theme.fg)}
+          className={cn('rounded-lg p-1.5 transition-colors hover:bg-fg/5', theme.fg)}
           aria-label={`Adicionar tarefa em ${STATUS_LABEL[status]}`}
           title="Adicionar tarefa"
         >
@@ -304,7 +304,7 @@ function QuickAdd({ status }: { status: BoardStatus }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-auto flex items-center gap-2 rounded-lg px-2 py-2 text-[13px] text-fg-muted transition-colors hover:bg-white/5 hover:text-fg"
+        className="mt-auto flex items-center gap-2 rounded-lg px-2 py-2 text-[13px] text-fg-muted transition-colors hover:bg-fg/5 hover:text-fg"
       >
         <Plus size={15} /> Adicionar tarefa
       </button>

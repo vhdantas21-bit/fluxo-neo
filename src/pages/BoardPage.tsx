@@ -52,7 +52,7 @@ export function BoardPage() {
               onClick={() => setMobileColumn(s)}
               className={cn(
                 'flex h-10 items-center justify-center gap-1.5 rounded-lg text-[13px] font-medium transition-colors',
-                mobileColumn === s ? cn(STATUS_THEME[s].soft, STATUS_THEME[s].fg, 'ring-1 ring-inset ring-white/10') : 'text-fg-subtle',
+                mobileColumn === s ? cn(STATUS_THEME[s].soft, STATUS_THEME[s].fg, 'ring-1 ring-inset ring-fg/10') : 'text-fg-subtle',
               )}
             >
               {STATUS_LABEL[s]}

@@ -35,7 +35,7 @@ interface Entry {
 
 const WEEKDAYS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
 
-export function AgendaPage() {
+export function CalendarPage() {
   const { data, updateTask } = useData()
   const { openTask } = useTaskModal()
   const toast = useToast()
@@ -94,7 +94,7 @@ export function AgendaPage() {
   return (
     <div className="mx-auto max-w-7xl">
       <PageHeader
-        title="Agenda"
+        title="Calendário"
         description="Prazos e datas de execução planejadas. Arraste uma tarefa para outro dia para mudar a data."
       />
 
@@ -295,6 +295,8 @@ function DraggableChip({ entry, onOpen }: { entry: Entry; onOpen: () => void }) 
       {...listeners}
       {...attributes}
       aria-roledescription="tarefa arrastável"
+      // Nome completo ao passar o mouse, já que o chip corta títulos longos.
+      title={`${entry.task.title} · ${entry.kind === 'due' ? 'Prazo' : 'Início planejado'}`}
       className={cn('block w-full text-left', isDragging && 'opacity-40')}
     >
       <ChipView entry={entry} />

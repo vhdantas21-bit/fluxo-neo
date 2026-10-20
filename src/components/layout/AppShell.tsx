@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import { Check, Ellipsis, HardDrive, LogOut, Plus, Search } from 'lucide-react'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Check, Ellipsis, HardDrive, LoaderCircle, LogOut, Plus } from 'lucide-react'
 import { useAuth } from '@/auth/AuthProvider'
 import { Avatar, useDisplayName } from '@/components/profile/Avatar'
 import { useData } from '@/store/DataProvider'
 import { useTaskModal } from '@/components/tasks/TaskModalProvider'
 import { Button } from '@/components/ui/Button'
+import ExpandableSearchBar from '@/components/ui/expandable-search-bar'
+import { SunMoonThemeToggle } from '@/components/ui/sun-moon-theme-toggle'
+import { THEME_STORAGE_KEY } from '@/lib/theme'
 import { Modal } from '@/components/ui/Modal'
 import { Spinner } from '@/components/ui/misc'
 import { useToast } from '@/components/ui/Toast'
@@ -19,7 +22,7 @@ const isTyping = (el: EventTarget | null) =>
 export function AppShell() {
   const { state, loadError, reload } = useData()
   const { openNewTask } = useTaskModal()
-  const searchRef = useRef<HTMLInputElement>(null)
+  const [searchOpen, setSearchOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
   const location = useLocation()
 
@@ -30,8 +33,7 @@ export function AppShell() {
       const mod = e.metaKey || e.ctrlKey
       if ((mod && e.key.toLowerCase() === 'k') || (!mod && e.key === '/' && !isTyping(e.target))) {
         e.preventDefault()
-        searchRef.current?.focus()
-        searchRef.current?.select()
+        setSearchOpen(true)
       } else if (!mod && !e.altKey && e.key.toLowerCase() === 'n' && !isTyping(e.target)) {
         e.preventDefault()
         openNewTask(location.pathname === '/backlog' ? { status: 'backlog' } : undefined)
@@ -49,7 +51,7 @@ export function AppShell() {
       >
         Pular para o conteúdo
       </a>
-      <Topbar searchRef={searchRef} />
+      <Topbar searchOpen={searchOpen} onSearchOpenChange={setSearchOpen} />
       <div className="flex min-h-0 flex-1">
         <Sidebar />
         <main id="conteudo" className="min-w-0 flex-1 px-4 pt-5 pb-28 sm:px-6 lg:px-8 lg:pt-7 lg:pb-10">
@@ -96,68 +98,32 @@ export function AppShell() {
   )
 }
 
-function Topbar({ searchRef }: { searchRef: React.RefObject<HTMLInputElement | null> }) {
+function Topbar({ searchOpen, onSearchOpenChange }: { searchOpen: boolean; onSearchOpenChange: (open: boolean) => void }) {
   const { openNewTask } = useTaskModal()
   const { pending, repoKind } = useData()
   const navigate = useNavigate()
   const location = useLocation()
-  const [params] = useSearchParams()
-  const onSearchPage = location.pathname === '/pesquisa'
-  const [q, setQ] = useState(onSearchPage ? (params.get('q') ?? '') : '')
-
-  useEffect(() => {
-    if (!onSearchPage) setQ('')
-  }, [onSearchPage])
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur supports-[backdrop-filter]:bg-bg/80">
-      <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-0">
+      <div className="flex h-16 items-center gap-2 px-4 sm:gap-3 sm:px-6 lg:px-0">
         <Link to="/" className="shrink-0 rounded-lg lg:w-60 lg:px-6" aria-label="FLUXO NEO — início">
           <Logo className="hidden sm:flex" />
           <LogoMark className="sm:hidden" />
         </Link>
-        <form
-          role="search"
-          className="relative min-w-0 flex-1 lg:max-w-xl lg:pl-8"
-          onSubmit={(e) => {
-            e.preventDefault()
-            navigate(`/pesquisa?q=${encodeURIComponent(q.trim())}`)
-          }}
-        >
-          <Search size={16} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-fg-subtle lg:left-11" aria-hidden />
-          <label htmlFor="global-search" className="sr-only">
-            Pesquisar tarefas
-          </label>
-          <input
-            id="global-search"
-            ref={searchRef}
-            type="search"
-            value={q}
-            onChange={(e) => {
-              setQ(e.target.value)
-              if (onSearchPage) navigate(`/pesquisa?q=${encodeURIComponent(e.target.value)}`, { replace: true })
+        <div className="ml-auto flex items-center gap-2 sm:gap-3 lg:pr-8">
+          <ExpandableSearchBar
+            expandDirection="left"
+            placeholder="Pesquisar tarefas..."
+            width={300}
+            open={searchOpen}
+            onOpenChange={onSearchOpenChange}
+            onSearch={(q) => {
+              if (q.trim()) navigate(`/pesquisa?q=${encodeURIComponent(q.trim())}`)
             }}
-            placeholder="Pesquisar tarefas…"
-            className="h-10 w-full rounded-lg border border-line bg-surface pr-12 pl-9 text-sm text-fg placeholder:text-fg-subtle transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30 focus:outline-none"
           />
-          <kbd className="pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 rounded border border-line-strong px-1.5 text-[11px] text-fg-subtle sm:block">
-            /
-          </kbd>
-        </form>
-        <div className="ml-auto flex items-center gap-3 lg:pr-8">
-          <span className="hidden items-center gap-1.5 text-xs text-fg-subtle md:flex" aria-live="polite">
-            {pending > 0 ? (
-              <>
-                <span className="h-3 w-3 animate-spin rounded-full border-2 border-line-strong border-t-primary-text" aria-hidden />
-                Salvando…
-              </>
-            ) : (
-              <>
-                {repoKind === 'local' ? <HardDrive size={13} aria-hidden /> : <Check size={13} aria-hidden />}
-                {repoKind === 'local' ? 'Salvo neste dispositivo' : 'Sincronizado'}
-              </>
-            )}
-          </span>
+          <SunMoonThemeToggle size={36} defaultTheme="dark" storageKey={THEME_STORAGE_KEY} sky />
+          <SyncStatus pending={pending} local={repoKind === 'local'} />
           <Button
             variant="primary"
             onClick={() => openNewTask(location.pathname === '/backlog' ? { status: 'backlog' } : undefined)}
@@ -171,6 +137,64 @@ function Topbar({ searchRef }: { searchRef: React.RefObject<HTMLInputElement | n
         </div>
       </div>
     </header>
+  )
+}
+
+type SyncPhase = 'idle' | 'syncing' | 'done'
+const MIN_SYNC_VISIBLE_MS = 900
+const DONE_HIGHLIGHT_MS = 1400
+
+/**
+ * Indicador de gravação: mostra "Sincronizando…" com um spinner enquanto há
+ * gravações (no mínimo ~1 s, para ser perceptível) e depois confirma com o
+ * ✓ animado antes de voltar ao estado discreto.
+ */
+function SyncStatus({ pending, local }: { pending: number; local: boolean }) {
+  const [phase, setPhase] = useState<SyncPhase>('idle')
+  const startedAt = useRef(0)
+
+  useEffect(() => {
+    if (pending > 0) {
+      if (phase !== 'syncing') {
+        startedAt.current = Date.now()
+        setPhase('syncing')
+      }
+      return
+    }
+    if (phase === 'syncing') {
+      const t = window.setTimeout(() => setPhase('done'), Math.max(0, MIN_SYNC_VISIBLE_MS - (Date.now() - startedAt.current)))
+      return () => window.clearTimeout(t)
+    }
+    if (phase === 'done') {
+      const t = window.setTimeout(() => setPhase('idle'), DONE_HIGHLIGHT_MS)
+      return () => window.clearTimeout(t)
+    }
+  }, [pending, phase])
+
+  const label = phase === 'syncing' ? (local ? 'Salvando…' : 'Sincronizando…') : local ? 'Salvo neste dispositivo' : 'Sincronizado'
+  const Icon = phase === 'syncing' ? LoaderCircle : local ? HardDrive : Check
+
+  return (
+    <span
+      role="status"
+      aria-live="polite"
+      title={label}
+      className={cn(
+        'flex items-center gap-1.5 text-xs transition-colors duration-300',
+        phase === 'idle' ? 'text-fg-subtle' : 'text-primary-text',
+      )}
+    >
+      <Icon
+        key={phase}
+        size={14}
+        aria-hidden
+        className={cn(phase === 'syncing' && 'animate-spin', phase === 'done' && 'animate-sync-pop')}
+      />
+      <span key={label} className="hidden animate-fade-in md:inline">
+        {label}
+      </span>
+      <span className="sr-only md:hidden">{label}</span>
+    </span>
   )
 }
 

@@ -1,6 +1,6 @@
 import { useMemo, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Camera, CalendarClock, CalendarCheck, ChartColumn, CircleCheck, CircleDashed, Flame, Plus, Timer } from 'lucide-react'
+import { ArrowRight, Camera, CalendarClock, CalendarCheck, CalendarX2, ChartColumn, CircleCheck, CircleDashed, Flame, Plus, Timer } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { EmptyState, ProgressBar } from '@/components/ui/misc'
 import { BarChart } from '@/components/charts/BarChart'
@@ -112,17 +112,26 @@ export function DashboardPage() {
             <Stat status="todo" icon={<CircleDashed size={16} />} label="Por concluir" value={counts.todo} hint="em A Fazer" />
             <Stat status="doing" icon={<Timer size={16} />} label="Em andamento" value={counts.doing} hint="em Fazendo" />
             <Stat status="done" icon={<CircleCheck size={16} />} label="Concluídas" value={counts.done} hint="no total" />
-            <div className="flex flex-col justify-between rounded-2xl border border-line bg-surface p-5">
+            <div className="flex flex-col rounded-2xl border border-line-strong bg-surface p-5">
               <p className="flex items-center gap-2 text-[13px] text-fg-muted">
-                <CalendarCheck size={16} className="text-sky" aria-hidden /> Previstas para hoje
+                <CalendarCheck size={16} className="text-fg-subtle" aria-hidden /> Previstas para hoje
               </p>
-              <p className="mt-2 text-3xl font-semibold tabular-nums">{today.total ? `${today.pct}%` : '—'}</p>
-              <div className="mt-3">
-                <ProgressBar value={today.pct} color="var(--color-sky)" label="Conclusão das tarefas de hoje" />
-                <p className="mt-2 text-xs text-fg-subtle">
-                  {today.total ? `${today.done} de ${today.total} concluídas` : 'Nada agendado para hoje'}
-                </p>
-              </div>
+              {today.total ? (
+                <>
+                  <p className="mt-2 text-3xl font-semibold tabular-nums">{today.pct}%</p>
+                  <div className="mt-3">
+                    <ProgressBar value={today.pct} color="var(--color-sky)" label="Conclusão das tarefas de hoje" />
+                    <p className="mt-2 text-xs text-fg-subtle">
+                      {today.done} de {today.total} concluídas
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-1 flex-col items-center justify-center gap-2 py-2 text-center text-fg-subtle">
+                  <CalendarX2 size={26} strokeWidth={1.5} aria-hidden />
+                  <p className="text-xs">Nada agendado para hoje</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -138,7 +147,7 @@ export function DashboardPage() {
             )}
           </Panel>
 
-          <Panel tone="sky" icon={<CalendarClock size={16} />} title="Próximos prazos" to="/agenda">
+          <Panel tone="sky" icon={<CalendarClock size={16} />} title="Próximos prazos" to="/calendario">
             {deadlines.length ? (
               <ul className="-mx-2 flex flex-col">
                 {deadlines.map((t) => (
@@ -146,7 +155,7 @@ export function DashboardPage() {
                     <button
                       type="button"
                       onClick={() => openTask(t.id)}
-                      className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-2.5 text-left hover:bg-white/5"
+                      className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-2.5 text-left hover:bg-fg/5"
                     >
                       <span className="min-w-0 truncate text-sm">{t.title}</span>
                       <DueChip task={t} showIcon={false} />
@@ -193,14 +202,22 @@ export function DashboardPage() {
   )
 }
 
-function Stat({ status, icon, label, value, hint }: { status: TaskStatus; icon: ReactNode; label: string; value: number; hint: string }) {
+/** Acento de cada card: azul da marca (A Fazer), laranja (Fazendo), branco/cinza claro (Feito). */
+const statAccent: Record<Exclude<TaskStatus, 'backlog'>, { border: string; text: string }> = {
+  todo: { border: 'border-t-primary', text: 'text-primary-text' },
+  doing: { border: 'border-t-ember', text: 'text-ember-fg' },
+  done: { border: 'border-t-fg-muted', text: 'text-fg-muted' },
+}
+
+function Stat({ status, icon, label, value, hint }: { status: Exclude<TaskStatus, 'backlog'>; icon: ReactNode; label: string; value: number; hint: string }) {
   const theme = STATUS_THEME[status]
+  const accent = statAccent[status]
   return (
     <Link
       to="/quadro"
-      className={cn('rounded-2xl border border-t-[3px] p-5 transition-[filter] hover:brightness-110', theme.soft, theme.line, theme.accent)}
+      className={cn('rounded-2xl border border-t-[3px] p-5 transition-[filter] hover:brightness-110', theme.soft, theme.line, accent.border)}
     >
-      <p className={cn('flex items-center gap-2 text-[13px]', theme.fg)}>
+      <p className={cn('flex items-center gap-2 text-[13px]', accent.text)}>
         <span aria-hidden>{icon}</span>
         {label}
       </p>
@@ -254,7 +271,7 @@ function TaskRow({ task, onOpen }: { task: Task; onOpen: () => void }) {
   const project = data.projects.find((p) => p.id === task.projectId)
   return (
     <li>
-      <button type="button" onClick={onOpen} className="flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left hover:bg-white/5">
+      <button type="button" onClick={onOpen} className="flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left hover:bg-fg/5">
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-medium">{task.title}</span>
           {project && (

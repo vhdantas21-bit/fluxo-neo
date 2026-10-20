@@ -7,6 +7,17 @@
     <meta name="description" content="FLUXO NEO — gestão de tarefas pessoais em quadro Kanban." />
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <title>FLUXO NEO</title>
+    <script>
+      // Aplica o tema guardado antes da primeira pintura (evita "piscar").
+      try {
+        var t = localStorage.getItem('fluxo-neo-theme') === 'light' ? 'light' : 'dark'
+        var r = document.documentElement
+        r.dataset.theme = t
+        r.classList.add(t)
+        r.style.colorScheme = t
+        if (t === 'light') document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f4f5f7')
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

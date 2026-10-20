@@ -82,18 +82,27 @@ export function BacklogPage() {
         <label htmlFor="quick-backlog" className="sr-only">
           Nova ideia
         </label>
-        <div className="relative flex-1">
-          <Lightbulb size={16} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-fg-subtle" aria-hidden />
+        <div className="group relative flex-1">
+          <Lightbulb
+            size={20}
+            className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-primary-text transition-colors group-focus-within:text-accent-text"
+            aria-hidden
+          />
           <Input
             id="quick-backlog"
             value={quick}
             maxLength={200}
             onChange={(e) => setQuick(e.target.value)}
             placeholder="Escreva uma ideia e pressione Enter…"
-            className="h-11 pl-9"
+            className="h-14 rounded-xl border-primary/40 bg-surface-2 pl-12 text-base shadow-card focus:border-primary focus:ring-4 focus:ring-primary/25"
           />
         </div>
-        <Button type="submit" variant="primary" className="h-11" disabled={!quick.trim()}>
+        <Button
+          type="submit"
+          variant="primary"
+          className="h-14 rounded-xl px-5 text-[15px] transition-[background-color,box-shadow,transform] hover:-translate-y-px hover:shadow-pop hover:ring-2 hover:ring-primary/40 active:translate-y-0"
+          disabled={!quick.trim()}
+        >
           <Plus size={16} aria-hidden /> <span className="hidden sm:inline">Anotar</span>
         </Button>
       </form>

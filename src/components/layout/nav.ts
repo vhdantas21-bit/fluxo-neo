@@ -12,10 +12,10 @@ export const NAV: NavItem[] = [
   { to: '/quadro', label: 'Meu quadro', short: 'Quadro', icon: Columns3 },
   { to: '/backlog', label: 'Backlog', short: 'Backlog', icon: Inbox },
   { to: '/projetos', label: 'Projetos', short: 'Projetos', icon: FolderKanban },
-  { to: '/agenda', label: 'Agenda', short: 'Agenda', icon: CalendarDays },
+  { to: '/calendario', label: 'Calendário', short: 'Calendário', icon: CalendarDays },
   { to: '/estatisticas', label: 'Estatísticas', short: 'Estatísticas', icon: ChartColumn },
   { to: '/configuracoes', label: 'Configurações', short: 'Configurações', icon: Settings },
 ]
 
 /** Destinos principais da barra inferior no celular; os restantes ficam em "Mais". */
-export const MOBILE_PRIMARY = ['/', '/quadro', '/backlog', '/agenda']
+export const MOBILE_PRIMARY = ['/', '/quadro', '/backlog', '/calendario']

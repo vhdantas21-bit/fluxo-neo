@@ -43,7 +43,7 @@ Os dados do modo local não são migrados automaticamente; use **Configurações
 
 ## Publicar na Vercel
 
-O projeto já vem configurado para a Vercel em [`vercel.json`](vercel.json): build com Vite, saída em `dist/`, todas as rotas (`/quadro`, `/agenda`…) servindo `index.html`, cache longo para os arquivos em `/assets` e cabeçalhos básicos de segurança. A versão do Node fica fixada em `engines` no `package.json`.
+O projeto já vem configurado para a Vercel em [`vercel.json`](vercel.json): build com Vite, saída em `dist/`, todas as rotas (`/quadro`, `/calendario`…) servindo `index.html`, cache longo para os arquivos em `/assets` e cabeçalhos básicos de segurança. A versão do Node fica fixada em `engines` no `package.json`.
 
 1. Entre em [vercel.com](https://vercel.com) com **Continue with GitHub** (conta gratuita *Hobby*).
 2. **Add New… → Project** e importe o repositório `fluxo-neo`. Se ele não aparecer, clique em *Adjust GitHub App Permissions* e libere o repositório.
@@ -66,7 +66,7 @@ Em outra hospedagem estática, sirva a pasta `dist/` gerada por `npm run build` 
 | **Tarefas** | Título (obrigatório), descrição, estado, prioridade, datas de início e limite, projeto, categoria, subtarefas e notas. Editar, duplicar, arquivar, excluir (com confirmação) e **Desfazer**. |
 | **Backlog** | Anotação rápida, pesquisa, filtros, seleção múltipla, mover para “A Fazer”, definir data de execução, arquivar e aba **Arquivo** para restaurar. |
 | **Projetos** | Nome, descrição, cor, datas e estado; progresso automático e tarefas por estado. |
-| **Agenda** | Visualizações mensal e semanal com prazos e inícios planejados; arrastar para outro dia muda a data; atrasadas destacadas com discrição. |
+| **Calendário** | Visualizações mensal e semanal com prazos e inícios planejados; arrastar para outro dia muda a data; atrasadas destacadas com discrição. |
 | **Estatísticas** | Concluídas por semana e por mês, distribuição por estado, atrasadas, histórico de conclusão e progresso por projeto. |
 | **Pesquisa** | Barra no topo (título e descrição) + filtros por estado, prioridade, projeto, categoria, prazo e atrasadas; ordenação por data limite, prioridade e criação. |
 
