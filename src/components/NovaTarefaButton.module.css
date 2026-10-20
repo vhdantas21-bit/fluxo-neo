@@ -1,0 +1,101 @@
+/*
+ * Cores da paleta do app (tokens do tema), em vez dos hex fixos do original,
+ * para seguir a identidade e funcionar nos temas claro e escuro:
+ * azul (base) → azul mais claro (hover) → laranja-avermelhado (pressionar).
+ */
+.button {
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  /* Sizing */
+  padding: 12px 22px;
+  min-height: 48px;
+  border: none;
+  border-radius: 10px;
+
+  /* Typography */
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: #ffffff;
+
+  /* Base appearance */
+  background-color: var(--color-primary);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 4px 14px -4px color-mix(in srgb, var(--color-primary) 55%, transparent);
+
+  /* Interaction */
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+
+  /* Transição restrita (não usar `all`, quebra o scale) */
+  transition:
+    background-color 120ms ease,
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    opacity 120ms ease;
+}
+
+.button:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.1) inset,
+    0 6px 18px -4px color-mix(in srgb, var(--color-primary-hover) 60%, transparent);
+}
+
+/* Vermelho + scale down no pressionar — conforme spec */
+.button:active:not(:disabled) {
+  background-color: var(--color-accent);
+  transform: scale(0.95);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 2px 8px -2px color-mix(in srgb, var(--color-accent) 55%, transparent);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--color-primary-text);
+  outline-offset: 3px;
+}
+
+.button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  display: block;
+}
+
+.label {
+  display: inline-block;
+}
+
+/* Celular: só o ícone, para caber no topo junto da busca e do tema */
+@media (max-width: 639px) {
+  .button {
+    width: 40px;
+    min-height: 40px;
+    padding: 0;
+  }
+  .label {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button:active:not(:disabled) {
+    transform: none;
+  }
+}

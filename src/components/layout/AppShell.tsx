@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Check, Ellipsis, HardDrive, LoaderCircle, LogOut, Plus } from 'lucide-react'
+import { Check, Ellipsis, HardDrive, LoaderCircle, LogOut } from 'lucide-react'
 import { useAuth } from '@/auth/AuthProvider'
 import { Avatar, useDisplayName } from '@/components/profile/Avatar'
 import { useData } from '@/store/DataProvider'
 import { useTaskModal } from '@/components/tasks/TaskModalProvider'
 import { Button } from '@/components/ui/Button'
 import ExpandableSearchBar from '@/components/ui/expandable-search-bar'
+import NovaTarefaButton from '@/components/NovaTarefaButton'
 import { SunMoonThemeToggle } from '@/components/ui/sun-moon-theme-toggle'
 import { THEME_STORAGE_KEY } from '@/lib/theme'
 import { Modal } from '@/components/ui/Modal'
@@ -125,16 +126,10 @@ function Topbar({ searchOpen, onSearchOpenChange }: { searchOpen: boolean; onSea
           />
           <SunMoonThemeToggle size={36} defaultTheme="dark" storageKey={THEME_STORAGE_KEY} sky />
           <SyncStatus pending={pending} local={repoKind === 'local'} />
-          <Button
-            variant="primary"
-            onClick={() => openNewTask(location.pathname === '/backlog' ? { status: 'backlog' } : undefined)}
-            className="max-sm:w-10 max-sm:px-0"
-            aria-label="Nova tarefa"
+          <NovaTarefaButton
             title="Nova tarefa (N)"
-          >
-            <Plus size={18} aria-hidden />
-            <span className="hidden sm:inline">Nova tarefa</span>
-          </Button>
+            onClick={() => openNewTask(location.pathname === '/backlog' ? { status: 'backlog' } : undefined)}
+          />
         </div>
       </div>
     </header>
