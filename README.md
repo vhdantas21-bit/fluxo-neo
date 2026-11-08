@@ -57,6 +57,12 @@ Se usar o Supabase, adicione o domínio da Vercel em **Authentication → URL Co
 
 Em outra hospedagem estática, sirva a pasta `dist/` gerada por `npm run build` e redirecione todas as rotas para `/index.html`.
 
+### Evitar a pausa do Supabase (plano grátis)
+
+O Supabase pausa projetos gratuitos depois de cerca de uma semana sem uso. A automação [`.github/workflows/supabase-keepalive.yml`](.github/workflows/supabase-keepalive.yml) chama a função `public.keepalive()` (migração [`0003_keepalive.sql`](supabase/migrations/0003_keepalive.sql)) a cada 3 dias. Ela usa as variáveis `SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY` do repositório (**Settings → Secrets and variables → Actions → Variables**). Para rodar à mão: **Actions → Manter Supabase ativo → Run workflow**.
+
+O GitHub desativa automações agendadas em repositórios públicos sem nenhum commit durante 60 dias (e avisa por email antes). Se isso acontecer, reative em **Actions**.
+
 ## Funcionalidades
 
 | Área | O que faz |
