@@ -100,7 +100,7 @@ export function TaskFiltersBar({ value, onChange, show = {}, statuses = ALL_STAT
       </div>
 
       {expanded && (
-        <div className="grid animate-fade-in gap-4 rounded-xl border border-line bg-surface p-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="surface-panel grid animate-fade-in gap-4 rounded-xl p-4 sm:grid-cols-2 xl:grid-cols-3">
           {show.status !== false && (
             <fieldset>
               <legend className="mb-2 text-xs font-medium text-fg-subtle">Estado</legend>

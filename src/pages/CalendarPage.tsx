@@ -154,7 +154,7 @@ export function CalendarPage() {
         onDragEnd={onDragEnd}
       >
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
-          <div className="overflow-hidden rounded-2xl border border-line bg-surface">
+          <div className="surface-panel overflow-hidden rounded-2xl">
             <div className={cn('grid grid-cols-7 border-b border-line', view === 'week' && 'max-sm:hidden')}>
               {WEEKDAYS.map((d) => (
                 <div key={d} className="px-2 py-2 text-center text-[11px] font-medium tracking-wide text-fg-subtle uppercase">
@@ -183,7 +183,7 @@ export function CalendarPage() {
             </div>
           </div>
 
-          <aside className="rounded-2xl border border-line bg-surface p-4" aria-live="polite">
+          <aside className="surface-panel rounded-2xl p-4" aria-live="polite">
             <h3 className="text-sm font-semibold first-letter:uppercase">{formatLong(fromDateOnly(selected))}</h3>
             {selectedEntries.length === 0 ? (
               <p className="mt-3 text-[13px] text-fg-subtle">Sem tarefas neste dia. Arraste uma tarefa para cá ou defina a data ao editá-la.</p>

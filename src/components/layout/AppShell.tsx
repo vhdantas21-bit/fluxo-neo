@@ -106,7 +106,7 @@ function Topbar({ searchOpen, onSearchOpenChange }: { searchOpen: boolean; onSea
   const location = useLocation()
 
   return (
-    <header className="sticky top-0 z-30 overflow-hidden border-b border-line bg-bg/95 backdrop-blur supports-[backdrop-filter]:bg-bg/80">
+    <header className="sticky top-0 z-30 overflow-hidden border-b border-glass-border bg-bg/85 shadow-[0_8px_24px_-16px_rgb(0_0_0/0.6)] backdrop-blur-xl supports-[backdrop-filter]:bg-bg/70">
       <BrandStripes />
       <div className="relative flex h-16 items-center gap-2 px-4 sm:gap-3 sm:px-6 lg:px-0">
         <Link to="/" className="shrink-0 rounded-lg lg:w-60 lg:px-6" aria-label="FLUXO NEO — início">
@@ -219,7 +219,7 @@ function Sidebar() {
   const name = useDisplayName()
 
   return (
-    <aside className="sticky top-16 hidden h-[calc(100dvh-4rem)] w-60 shrink-0 flex-col border-r border-line px-3 py-5 lg:flex">
+    <aside className="sticky top-16 hidden h-[calc(100dvh-4rem)] w-60 shrink-0 flex-col border-r border-glass-border bg-bg/40 px-3 py-5 backdrop-blur-xl lg:flex">
       <nav aria-label="Navegação principal" className="flex flex-col gap-0.5">
         {NAV.map(({ to, label, icon: Icon }) => (
           <NavLink
@@ -229,7 +229,7 @@ function Sidebar() {
             className={({ isActive }) =>
               cn(
                 'relative flex items-center gap-3 overflow-hidden rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                isActive ? 'bg-primary font-semibold text-white shadow-card' : 'text-fg-muted hover:bg-surface hover:text-fg',
+                isActive ? 'bg-primary font-semibold text-white shadow-lift' : 'text-fg-muted hover:bg-fg/5 hover:text-fg',
               )
             }
           >
@@ -250,7 +250,7 @@ function Sidebar() {
         ))}
       </nav>
 
-      <div className="mt-auto rounded-xl border border-line bg-surface p-3">
+      <div className="surface-panel mt-auto rounded-xl p-3">
         {mode === 'local' ? (
           <Link to="/configuracoes" className="flex items-start gap-2.5 text-xs">
             <HardDrive size={16} className="mt-0.5 shrink-0 text-fg-subtle" aria-hidden />
@@ -290,7 +290,7 @@ function MobileNav({ onMore }: { onMore: () => void }) {
   return (
     <nav
       aria-label="Navegação principal"
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-glass-border bg-bg/80 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_-16px_rgb(0_0_0/0.6)] backdrop-blur-xl lg:hidden"
     >
       <div className="mx-auto grid h-16 max-w-lg grid-cols-5">
         {NAV.filter((n) => MOBILE_PRIMARY.includes(n.to)).map(({ to, short, icon: Icon }) => (

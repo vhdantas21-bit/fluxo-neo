@@ -58,7 +58,7 @@ export function ProgressBar({ value, color, label }: { value: number; color?: st
 }
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
-  return <section className={cn('rounded-2xl border border-line bg-surface p-5', className)}>{children}</section>
+  return <section className={cn('surface-panel rounded-2xl p-5', className)}>{children}</section>
 }
 
 export function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: ReactNode }) {

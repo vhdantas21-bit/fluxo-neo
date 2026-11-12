@@ -41,7 +41,7 @@ export function DashboardPage() {
   return (
     <div className="mx-auto max-w-6xl">
       {/* Destaque: foto e nome do usuário + tarefas em andamento */}
-      <section className="relative mb-6 overflow-hidden rounded-2xl border border-line bg-surface px-6 py-7 sm:px-8 sm:py-9">
+      <section className="surface-panel relative mb-6 overflow-hidden rounded-2xl px-6 py-7 sm:px-8 sm:py-9">
         {avatarPicker.input}
         <div className="flex items-center justify-between gap-5">
           <div className="flex min-w-0 flex-col items-start gap-5">
@@ -112,7 +112,7 @@ export function DashboardPage() {
             <Stat status="todo" icon={<CircleDashed size={16} />} label="Por concluir" value={counts.todo} hint="em A Fazer" />
             <Stat status="doing" icon={<Timer size={16} />} label="Em andamento" value={counts.doing} hint="em Fazendo" />
             <Stat status="done" icon={<CircleCheck size={16} />} label="Concluídas" value={counts.done} hint="no total" />
-            <div className="flex flex-col rounded-2xl border border-line-strong bg-surface p-5">
+            <div className="surface-panel flex flex-col rounded-2xl p-5">
               <p className="flex items-center gap-2 text-[13px] text-fg-muted">
                 <CalendarCheck size={16} className="text-fg-subtle" aria-hidden /> Previstas para hoje
               </p>
@@ -203,10 +203,10 @@ export function DashboardPage() {
 }
 
 /** Acento de cada card: azul da marca (A Fazer), laranja (Fazendo), branco/cinza claro (Feito). */
-const statAccent: Record<Exclude<TaskStatus, 'backlog'>, { border: string; text: string }> = {
-  todo: { border: 'border-t-primary', text: 'text-primary-text' },
-  doing: { border: 'border-t-accent', text: 'text-ember-fg' },
-  done: { border: 'border-t-fg', text: 'text-fg' },
+const statAccent: Record<Exclude<TaskStatus, 'backlog'>, { border: string; text: string; orb: string }> = {
+  todo: { border: 'border-t-primary', text: 'text-primary-text', orb: '[--orb:var(--color-primary)]' },
+  doing: { border: 'border-t-accent', text: 'text-ember-fg', orb: '[--orb:var(--color-accent)]' },
+  done: { border: 'border-t-fg', text: 'text-fg', orb: '[--orb:#5a5a5a]' },
 }
 
 function Stat({ status, icon, label, value, hint }: { status: Exclude<TaskStatus, 'backlog'>; icon: ReactNode; label: string; value: number; hint: string }) {
@@ -215,14 +215,23 @@ function Stat({ status, icon, label, value, hint }: { status: Exclude<TaskStatus
   return (
     <Link
       to="/quadro"
-      className={cn('rounded-2xl border border-t-[3px] p-5 transition-[filter] hover:brightness-110', theme.soft, theme.line, accent.border)}
+      className={cn(
+        'surface-panel group rounded-2xl border-t-[3px] p-5 transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-lift',
+        theme.line,
+        accent.border,
+      )}
     >
       <p className={cn('flex items-center gap-2 text-[13px]', accent.text)}>
         <span aria-hidden>{icon}</span>
         {label}
       </p>
-      <p className="mt-2 text-3xl font-semibold tabular-nums">{value}</p>
-      <p className="mt-1 text-xs text-fg-subtle">{hint}</p>
+      <div className="mt-3 flex items-center gap-4">
+        <span className={cn('orb h-14 w-14 text-xl transition-transform group-hover:scale-105', accent.orb)} aria-hidden>
+          {value}
+        </span>
+        <span className="sr-only">{value}</span>
+        <span className="text-xs text-fg-subtle">{hint}</span>
+      </div>
     </Link>
   )
 }
@@ -249,7 +258,7 @@ function Panel({
   children: ReactNode
 }) {
   return (
-    <section className={cn('rounded-2xl border border-t-[3px] border-line bg-surface p-5', panelTone[tone].border, className)}>
+    <section className={cn('surface-panel rounded-2xl border-t-[3px] p-5', panelTone[tone].border, className)}>
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 className="flex items-center gap-2 text-sm font-semibold">
           <span className={panelTone[tone].icon} aria-hidden>

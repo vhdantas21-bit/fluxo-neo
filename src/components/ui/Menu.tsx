@@ -105,7 +105,7 @@ export function Menu({ trigger, label, items, align = 'right', triggerClassName 
           onClick={(e) => e.stopPropagation()}
           onPointerDown={(e) => e.stopPropagation()}
           style={pos}
-          className="z-50 max-h-[70vh] min-w-48 animate-pop-in overflow-y-auto rounded-xl border border-line-strong bg-surface-2 p-1 shadow-pop"
+          className="z-50 max-h-[70vh] min-w-48 animate-pop-in overflow-y-auto rounded-xl border border-glass-border bg-surface-2/90 p-1 shadow-pop backdrop-blur-xl"
         >
           {items.map((item, i) =>
             item === 'separator' ? (

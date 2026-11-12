@@ -121,7 +121,7 @@ export function ProjectDetailPage() {
           {ALL_STATUSES.map((s) => {
             const list = sortTasks(tasks.filter((t) => t.status === s), 'position')
             return (
-              <section key={s} aria-label={STATUS_LABEL[s]} className="rounded-2xl border border-line bg-surface p-3">
+              <section key={s} aria-label={STATUS_LABEL[s]} className="surface-panel rounded-2xl p-3">
                 <h2 className="mb-3 flex items-center justify-between px-1 text-[13px] font-semibold tracking-wide uppercase">
                   {STATUS_LABEL[s]}
                   <span className="rounded-md bg-surface-3 px-1.5 text-xs font-medium text-fg-muted">{list.length}</span>

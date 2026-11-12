@@ -50,10 +50,10 @@ export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(function TaskC
       ref={ref}
       style={style}
       className={cn(
-        'group relative rounded-xl border border-l-4 bg-surface-2 p-3.5 pl-4 text-left shadow-card transition-[border-color,box-shadow,opacity] duration-150',
-        'cursor-pointer hover:border-line-strong focus-visible:outline-2 focus-visible:outline-primary-text',
+        'surface-raised group relative rounded-xl border border-l-4 p-3.5 pl-4 text-left transition-[border-color,box-shadow,opacity,transform] duration-150',
+        'cursor-pointer hover:-translate-y-px hover:border-line-strong hover:shadow-lift focus-visible:outline-2 focus-visible:outline-primary-text',
         overdue ? 'border-accent/40' : 'border-line',
-        task.status === 'done' && 'bg-surface',
+        task.status === 'done' && 'opacity-90',
         dragging && 'opacity-40',
         overlay && 'rotate-[1.5deg] cursor-grabbing border-primary/60 shadow-pop',
         // A borda esquerda indica a prioridade (definida por último para prevalecer).

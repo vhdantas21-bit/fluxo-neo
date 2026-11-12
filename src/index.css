@@ -19,6 +19,7 @@
   --color-surface-3: #303030;
   --color-line: #2c2c2c;
   --color-line-strong: #424242;
+  --color-glass-border: rgb(255 255 255 / 0.07);
 
   --color-fg: #fefefe;
   --color-fg-muted: #bdbdbd;
@@ -52,8 +53,10 @@
   --color-navy-line: #26315a;
   --color-navy-fg: #a9b6de;
 
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.35);
-  --shadow-pop: 0 12px 32px -8px rgb(0 0 0 / 0.6), 0 2px 6px rgb(0 0 0 / 0.35);
+  /* Elevação "macia": brilho interno no topo + sombras em camadas */
+  --shadow-card: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 24px -14px rgb(0 0 0 / 0.7);
+  --shadow-lift: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 2px 4px rgb(0 0 0 / 0.35), 0 18px 36px -16px rgb(0 0 0 / 0.75);
+  --shadow-pop: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 24px 56px -20px rgb(0 0 0 / 0.8), 0 4px 14px rgb(0 0 0 / 0.4);
 
   --animate-fade-in: fade-in 160ms ease-out;
   --animate-pop-in: pop-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -79,13 +82,61 @@
   }
 }
 
+:root {
+  --ambient-a: color-mix(in srgb, #132967 55%, transparent);
+  --ambient-b: color-mix(in srgb, #c43004 12%, transparent);
+  --glass-bg: color-mix(in srgb, var(--color-surface) 80%, transparent);
+  --glass-border: rgb(255 255 255 / 0.07);
+  --raised-top: #2b2b2b;
+  --raised-bottom: #232323;
+}
+
+/* Painel de vidro: translúcido, desfoca o fundo ambiente, borda clara e elevação macia */
+@utility surface-panel {
+  background-color: var(--glass-bg);
+  -webkit-backdrop-filter: blur(16px) saturate(125%);
+  backdrop-filter: blur(16px) saturate(125%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-card);
+}
+
+/* Superfície elevada: leve degradê de luz (topo mais claro) + elevação macia */
+@utility surface-raised {
+  background-image: linear-gradient(180deg, var(--raised-top), var(--raised-bottom));
+  box-shadow: var(--shadow-card);
+}
+
+/* Orbe 3D (números em destaque, como na referência). Cor via --orb. */
+@utility orb {
+  --orb: var(--color-primary);
+  display: inline-grid;
+  place-items: center;
+  border-radius: 9999px;
+  color: #fff;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 1px rgb(0 0 0 / 0.25);
+  background: radial-gradient(circle at 32% 26%, color-mix(in srgb, #fff 38%, var(--orb)) 0%, var(--orb) 48%, color-mix(in srgb, #000 22%, var(--orb)) 100%);
+  box-shadow:
+    inset 0 -3px 6px rgb(0 0 0 / 0.22),
+    inset 0 2px 3px rgb(255 255 255 / 0.3),
+    0 10px 20px -8px color-mix(in srgb, var(--orb) 75%, transparent);
+}
+
 @layer base {
   :root {
     color-scheme: dark;
   }
-  html,
-  body {
+  html {
     background: var(--color-bg);
+  }
+  body {
+    /* Fundo ambiente: brilhos difusos das cores da marca (textura de referência) */
+    background:
+      radial-gradient(70rem 40rem at -10% -15%, var(--ambient-a), transparent 65%),
+      radial-gradient(60rem 36rem at 110% 115%, var(--ambient-b), transparent 65%),
+      var(--color-bg);
+    background-attachment: fixed;
     color: var(--color-fg);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
@@ -139,6 +190,7 @@
   --color-surface-3: #e7e7ea;
   --color-line: #e2e2e5;
   --color-line-strong: #c9c9ce;
+  --color-glass-border: rgb(255 255 255 / 0.85);
 
   --color-fg: #171717;
   --color-fg-muted: #424242;
@@ -168,8 +220,16 @@
   --color-navy-line: #c9d0e8;
   --color-navy-fg: #1f2f6b;
 
-  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.06);
-  --shadow-pop: 0 12px 32px -8px rgb(16 24 40 / 0.18), 0 2px 6px rgb(16 24 40 / 0.08);
+  --shadow-card: inset 0 1px 0 rgb(255 255 255 / 0.9), 0 1px 2px rgb(16 24 40 / 0.06), 0 10px 24px -14px rgb(16 24 40 / 0.18);
+  --shadow-lift: inset 0 1px 0 rgb(255 255 255 / 0.95), 0 2px 4px rgb(16 24 40 / 0.06), 0 18px 36px -16px rgb(16 24 40 / 0.24);
+  --shadow-pop: inset 0 1px 0 rgb(255 255 255 / 0.95), 0 24px 56px -20px rgb(16 24 40 / 0.28), 0 4px 14px rgb(16 24 40 / 0.08);
+
+  --ambient-a: color-mix(in srgb, #2c50a1 16%, transparent);
+  --ambient-b: color-mix(in srgb, #c43004 10%, transparent);
+  --glass-bg: color-mix(in srgb, #ffffff 72%, transparent);
+  --glass-border: rgb(255 255 255 / 0.85);
+  --raised-top: #ffffff;
+  --raised-bottom: #f6f6f8;
 }
 
 :root[data-theme='light'] input[type='date']::-webkit-calendar-picker-indicator {

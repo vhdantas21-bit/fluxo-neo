@@ -29,21 +29,21 @@ const columnIcon = { todo: CircleDashed, doing: Timer, done: CircleCheck }
 /** Moldura, faixa superior e destaques de cada coluna (Feito em tom branco). */
 const columnStyle: Record<BoardStatus, { frame: string; head: string; title: string; count: string; add: string }> = {
   todo: {
-    frame: 'border-primary/60 border-t-primary bg-sky-soft',
+    frame: 'border-primary/60 border-t-primary bg-sky-soft/85',
     head: 'bg-primary/15',
     title: 'text-sky-fg',
     count: 'bg-primary text-white',
     add: 'text-sky-fg',
   },
   doing: {
-    frame: 'border-accent/60 border-t-accent bg-ember-soft',
+    frame: 'border-accent/60 border-t-accent bg-ember-soft/85',
     head: 'bg-accent/15',
     title: 'text-ember-fg',
     count: 'bg-accent text-white',
     add: 'text-ember-fg',
   },
   done: {
-    frame: 'border-fg/35 border-t-fg bg-surface',
+    frame: 'border-fg/35 border-t-fg bg-surface/85',
     head: 'bg-fg/[0.06]',
     title: 'text-fg',
     count: 'bg-fg text-bg',
@@ -223,7 +223,7 @@ function Column({ status, ids, byId, hiddenOnMobile, filtered, wipLimit, onOpen 
     <section
       aria-labelledby={headingId}
       className={cn(
-        'flex min-h-[50vh] flex-col overflow-hidden rounded-2xl border border-t-[5px] shadow-card transition-[box-shadow,filter] duration-150 md:min-h-0',
+        'flex min-h-[50vh] flex-col overflow-hidden rounded-2xl border border-t-[5px] shadow-lift backdrop-blur-xl transition-[box-shadow,filter] duration-150 md:min-h-0',
         style.frame,
         isOver && 'shadow-pop brightness-125',
         hiddenOnMobile && 'hidden md:flex',

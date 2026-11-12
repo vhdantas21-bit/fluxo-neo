@@ -62,7 +62,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
         if (downOnBackdrop.current && e.target === ref.current) onClose()
       }}
       className={cn(
-        'm-0 mt-auto max-h-[92dvh] focus-visible:outline-none w-full max-w-none rounded-t-2xl border border-line-strong bg-surface p-0 text-fg shadow-pop',
+        'm-0 mt-auto max-h-[92dvh] focus-visible:outline-none w-full max-w-none rounded-t-2xl border border-glass-border bg-surface/95 p-0 text-fg shadow-pop backdrop-blur-2xl',
         'sm:m-auto sm:max-h-[88vh] sm:rounded-2xl',
         widths[size],
         open && 'animate-pop-in',

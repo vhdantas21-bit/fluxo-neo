@@ -50,7 +50,7 @@ export function ProjectsPage() {
               <li key={p.id}>
                 <Link
                   to={`/projetos/${p.id}`}
-                  className="flex h-full flex-col rounded-2xl border border-line bg-surface p-5 transition-colors hover:border-line-strong hover:bg-surface-2"
+                  className="surface-panel flex h-full flex-col rounded-2xl p-5 transition-[transform,box-shadow,border-color] hover:-translate-y-0.5 hover:border-line-strong hover:shadow-lift"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <span className="flex min-w-0 items-center gap-2.5">
