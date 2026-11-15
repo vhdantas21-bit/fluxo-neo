@@ -23,6 +23,7 @@ export function DashboardPage() {
   const today = todayProgress(tasks)
   const priorities = priorityTasks(tasks).slice(0, 5)
   const deadlines = upcomingDeadlines(tasks, 7).slice(0, 6)
+  const focus = tasks.filter((t) => t.status === 'doing').slice(0, 3)
   const weekDays = completedThisWeekByDay(data.tasks)
 
   const weekStart = toDateOnly(startOfWeek(new Date()))
@@ -109,14 +110,34 @@ export function DashboardPage() {
       ) : (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:col-span-3">
-            <Stat status="todo" icon={<CircleDashed size={16} />} label="Por concluir" value={counts.todo} hint="em A Fazer" />
-            <Stat status="doing" icon={<Timer size={16} />} label="Em andamento" value={counts.doing} hint="em Fazendo" />
-            <Stat status="done" icon={<CircleCheck size={16} />} label="Concluídas" value={counts.done} hint="no total" />
+            <Stat status="todo" icon={<CircleDashed size={16} />} label="Por concluir" value={counts.todo} hint="a fazer" />
+            <Stat status="doing" icon={<Timer size={16} />} label="Em andamento" value={counts.doing} hint="fazendo" />
+            <Stat status="done" icon={<CircleCheck size={16} />} label="Concluídas" value={counts.done} hint="concluídas" />
             <div className="surface-panel flex flex-col rounded-2xl p-5">
               <p className="flex items-center gap-2 text-[13px] text-fg-muted">
-                <CalendarCheck size={16} className="text-fg-subtle" aria-hidden /> Previstas para hoje
+                <CalendarCheck size={16} className="text-fg-subtle" aria-hidden />
+                {today.total || !focus.length ? 'Previstas para hoje' : 'Foco de hoje'}
               </p>
-              {today.total ? (
+              {!today.total && focus.length > 0 ? (
+                // Sem tarefas com data para hoje: o foco do dia é o que está em Fazendo.
+                <ul className="mt-3 flex flex-col gap-1">
+                  {focus.map((t) => (
+                    <li key={t.id}>
+                      <button
+                        type="button"
+                        onClick={() => openTask(t.id)}
+                        className="flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-left text-[13px] hover:bg-fg/5"
+                      >
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-ember" aria-hidden />
+                        <span className="truncate">{t.title}</span>
+                      </button>
+                    </li>
+                  ))}
+                  {counts.doing > focus.length && (
+                    <li className="px-1.5 text-xs text-fg-subtle">+{counts.doing - focus.length} em andamento</li>
+                  )}
+                </ul>
+              ) : today.total ? (
                 <>
                   <p className="mt-2 text-3xl font-semibold tabular-nums">{today.pct}%</p>
                   <div className="mt-3">

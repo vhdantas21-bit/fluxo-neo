@@ -1,5 +1,6 @@
 import { forwardRef, type CSSProperties, type HTMLAttributes } from 'react'
-import { Archive, ArrowRight, Copy, ListChecks, Ellipsis, Pencil, StickyNote, Trash } from 'lucide-react'
+import { Archive, ArrowRight, Copy, ListChecks, Ellipsis, Pencil, Repeat, StickyNote, Trash } from 'lucide-react'
+import { describeRecurrence } from '@/lib/recurrence'
 import { Menu, type MenuItem } from '@/components/ui/Menu'
 import { useData } from '@/store/DataProvider'
 import { ALL_STATUSES, STATUS_LABEL, type Task, type TaskStatus } from '@/types'
@@ -123,6 +124,12 @@ export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(function TaskC
             <ListChecks size={12} aria-hidden />
             <span className="sr-only">Subtarefas: </span>
             {subsDone}/{task.subtasks.length}
+          </span>
+        )}
+        {task.recurrence && (
+          <span className="inline-flex items-center text-fg-subtle" title={describeRecurrence(task.recurrence)}>
+            <Repeat size={12} aria-hidden />
+            <span className="sr-only">{describeRecurrence(task.recurrence)}</span>
           </span>
         )}
         {task.notes && (

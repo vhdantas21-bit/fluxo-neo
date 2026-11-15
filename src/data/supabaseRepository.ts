@@ -1,5 +1,5 @@
 import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js'
-import type { AppData, Category, Priority, Profile, Project, ProjectStatus, Subtask, Task, TaskStatus } from '@/types'
+import type { AppData, Category, Priority, Profile, Project, ProjectStatus, Recurrence, Subtask, Task, TaskStatus } from '@/types'
 import type { DataRepository } from './repository'
 
 // Linhas tal como existem no PostgreSQL (ver supabase/migrations).
@@ -14,6 +14,7 @@ interface TaskRow {
   project_id: string | null
   category_id: string | null
   notes: string
+  recurrence: Recurrence | null
   position: number
   completed_at: string | null
   archived_at: string | null
@@ -112,6 +113,7 @@ export class SupabaseRepository implements DataRepository {
         projectId: r.project_id,
         categoryId: r.category_id,
         notes: r.notes,
+        recurrence: r.recurrence ?? null,
         position: r.position,
         completedAt: r.completed_at,
         archivedAt: r.archived_at,
@@ -153,6 +155,7 @@ export class SupabaseRepository implements DataRepository {
       project_id: t.projectId,
       category_id: t.categoryId,
       notes: t.notes,
+      recurrence: t.recurrence,
       position: t.position,
       completed_at: t.completedAt,
       archived_at: t.archivedAt,

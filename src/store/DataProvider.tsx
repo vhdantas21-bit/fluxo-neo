@@ -2,6 +2,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { DataRepository } from '@/data/repository'
 import type { AppData, Category, Profile, Project, Subtask, Task, TaskStatus } from '@/types'
 import { errorMessage, nowISO, uid } from '@/lib/utils'
+import { nextOccurrence } from '@/lib/recurrence'
+import { formatRelative } from '@/lib/dates'
 import { useToast } from '@/components/ui/Toast'
 
 export type TaskDraft = Omit<Task, 'id' | 'position' | 'completedAt' | 'archivedAt' | 'createdAt' | 'updatedAt'>
@@ -50,6 +52,23 @@ const emptyData: AppData = { tasks: [], projects: [], categories: [], profile: {
 function withStatus(t: Task, status: TaskStatus, now: string): Task {
   if (t.status === status) return t
   return { ...t, status, completedAt: status === 'done' ? (t.completedAt ?? now) : null }
+}
+
+/**
+ * Tarefas recorrentes: para cada tarefa de `changed` que acabou de passar a
+ * "done" com uma regra, limpa a regra da concluída e acrescenta a próxima
+ * ocorrência em "A Fazer". Devolve a lista final a gravar e as criadas.
+ */
+function spawnRecurring(changed: Task[], before: Map<string, Task>, all: Task[], now: string) {
+  const spawned: Task[] = []
+  let top = topPosition(all, 'todo', new Set(changed.map((t) => t.id)))
+  const out = changed.map((t) => {
+    const prev = before.get(t.id)
+    if (!t.recurrence || t.status !== 'done' || !prev || prev.status === 'done') return t
+    spawned.push(nextOccurrence(t, t.recurrence, now, (top -= 1024)))
+    return { ...t, recurrence: null }
+  })
+  return { tasks: [...out, ...spawned], spawned }
 }
 
 /** Posição para colocar no topo de uma coluna. */
@@ -161,6 +180,22 @@ export function DataProvider({ repo, children }: { repo: DataRepository; childre
     [commit, persist, repo],
   )
 
+  /** Grava mudanças de estado aplicando a recorrência e avisando. */
+  const saveWithRecurrence = useCallback(
+    (changed: Task[]) => {
+      const d = dataRef.current
+      const before = new Map(d.tasks.map((t) => [t.id, t]))
+      const { tasks, spawned } = spawnRecurring(changed, before, d.tasks, nowISO())
+      saveTasks(tasks)
+      for (const t of spawned) {
+        toast.success(
+          t.dueDate ? `Próxima ocorrência criada em A Fazer para ${formatRelative(t.dueDate)}.` : 'Próxima ocorrência criada em A Fazer.',
+        )
+      }
+    },
+    [saveTasks, toast],
+  )
+
   const createTask = useCallback(
     (draft: TaskDraft): Task => {
       const now = nowISO()
@@ -189,9 +224,9 @@ export function DataProvider({ repo, children }: { repo: DataRepository; childre
         next = withStatus(next, patch.status, nowISO())
         next.position = topPosition(d.tasks, patch.status, new Set([id]))
       }
-      saveTasks([next])
+      saveWithRecurrence([next])
     },
-    [saveTasks],
+    [saveWithRecurrence],
   )
 
   const moveTask = useCallback(
@@ -202,7 +237,7 @@ export function DataProvider({ repo, children }: { repo: DataRepository; childre
       const now = nowISO()
       if (!orderedIds) {
         if (t.status === status) return
-        saveTasks([{ ...withStatus(t, status, now), position: topPosition(d.tasks, status, new Set([id])) }])
+        saveWithRecurrence([{ ...withStatus(t, status, now), position: topPosition(d.tasks, status, new Set([id])) }])
         return
       }
       // Reatribui posições apenas às tarefas cuja ordem ou estado mudou.
@@ -215,9 +250,9 @@ export function DataProvider({ repo, children }: { repo: DataRepository; childre
         const moved = tid === id ? withStatus(cur, status, now) : cur
         if (moved !== cur || cur.position !== position) changed.push({ ...moved, position })
       })
-      saveTasks(changed)
+      saveWithRecurrence(changed)
     },
-    [saveTasks],
+    [saveWithRecurrence],
   )
 
   const moveTasks = useCallback(
@@ -228,9 +263,9 @@ export function DataProvider({ repo, children }: { repo: DataRepository; childre
       const changed = d.tasks
         .filter((t) => ids.includes(t.id) && t.status !== status)
         .map((t) => ({ ...withStatus(t, status, now), position: (top -= 1024) }))
-      saveTasks(changed)
+      saveWithRecurrence(changed)
     },
-    [saveTasks],
+    [saveWithRecurrence],
   )
 
   const setTasksStartDate = useCallback(

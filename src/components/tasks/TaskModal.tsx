@@ -7,7 +7,8 @@ import { Menu } from '@/components/ui/Menu'
 import { useConfirm } from '@/components/ui/Confirm'
 import { useToast } from '@/components/ui/Toast'
 import { useData, type TaskDraft } from '@/store/DataProvider'
-import { ALL_STATUSES, PALETTE_SWATCHES, PRIORITY_LABEL, STATUS_LABEL, type Priority, type Subtask } from '@/types'
+import { ALL_STATUSES, PALETTE_SWATCHES, PRIORITY_LABEL, STATUS_LABEL, type Priority, type RecurrenceFreq, type Subtask } from '@/types'
+import { RECURRENCE_LABEL, describeRecurrence } from '@/lib/recurrence'
 import { cn, uid } from '@/lib/utils'
 
 interface Props {
@@ -29,6 +30,7 @@ const blankDraft = (): TaskDraft => ({
   projectId: null,
   categoryId: null,
   notes: '',
+  recurrence: null,
   subtasks: [],
 })
 
@@ -356,6 +358,51 @@ export function TaskModal({ open, taskId, defaults, onClose }: Props) {
             )}
           </Field>
         </div>
+
+        <Field
+          label="Repetir"
+          htmlFor="task-recurrence"
+          hint={
+            draft.recurrence
+              ? `${describeRecurrence(draft.recurrence)}. Ao concluir, a próxima ocorrência é criada em A Fazer${draft.dueDate ? ', com a data limite avançada' : ''}.`
+              : 'Para rotinas: contas do mês, treino, publicações…'
+          }
+        >
+          <div className="flex gap-2">
+            <Select
+              id="task-recurrence"
+              value={draft.recurrence?.freq ?? ''}
+              onChange={(e) =>
+                set('recurrence', e.target.value ? { freq: e.target.value as RecurrenceFreq, interval: draft.recurrence?.interval ?? 1 } : null)
+              }
+              className="flex-1"
+            >
+              <option value="">Não repete</option>
+              {(Object.keys(RECURRENCE_LABEL) as RecurrenceFreq[]).map((f) => (
+                <option key={f} value={f}>
+                  {RECURRENCE_LABEL[f]}
+                </option>
+              ))}
+            </Select>
+            {draft.recurrence && (
+              <label className="flex items-center gap-2 text-[13px] text-fg-muted">
+                <span className="whitespace-nowrap">a cada</span>
+                <Input
+                  type="number"
+                  min={1}
+                  max={365}
+                  inputMode="numeric"
+                  aria-label="Intervalo da repetição"
+                  value={draft.recurrence.interval}
+                  onChange={(e) =>
+                    set('recurrence', { ...draft.recurrence!, interval: Math.min(365, Math.max(1, Number(e.target.value) || 1)) })
+                  }
+                  className="w-20"
+                />
+              </label>
+            )}
+          </div>
+        </Field>
 
         <fieldset>
           <legend className="mb-2 flex w-full items-center justify-between text-[13px] font-medium text-fg-muted">

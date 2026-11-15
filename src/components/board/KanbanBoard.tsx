@@ -318,6 +318,7 @@ function QuickAdd({ status, className }: { status: BoardStatus; className?: stri
       projectId: null,
       categoryId: null,
       notes: '',
+      recurrence: null,
       subtasks: [],
     })
     setTitle('')

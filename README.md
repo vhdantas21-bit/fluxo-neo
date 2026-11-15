@@ -69,7 +69,7 @@ O GitHub desativa automações agendadas em repositórios públicos sem nenhum c
 |---|---|
 | **Início** | Saudação, data, contadores (A Fazer / Fazendo / Feito), % das tarefas previstas para hoje, prioritárias, próximos prazos e resumo da semana — tudo calculado dos dados reais. |
 | **Meu quadro** | 3 colunas com contagem, botão “+”, adição rápida e área de soltar. Arrastar entre colunas e reordenar (mouse, toque e teclado). Limite configurável em “Fazendo” (WIP). No celular: uma coluna por vez + seletor de estado em cada cartão. |
-| **Tarefas** | Título (obrigatório), descrição, estado, prioridade, datas de início e limite, projeto, categoria, subtarefas e notas. Editar, duplicar, arquivar, excluir (com confirmação) e **Desfazer**. |
+| **Tarefas** | Título (obrigatório), descrição, estado, prioridade, datas de início e limite, projeto, categoria, subtarefas, notas e **repetição** (diária, semanal, mensal ou anual, a cada N). Ao concluir uma tarefa recorrente, a próxima ocorrência nasce em “A Fazer” com as datas avançadas e as subtarefas desmarcadas. Editar, duplicar, arquivar, excluir (com confirmação) e **Desfazer**. |
 | **Backlog** | Anotação rápida, pesquisa, filtros, seleção múltipla, mover para “A Fazer”, definir data de execução, arquivar e aba **Arquivo** para restaurar. |
 | **Projetos** | Nome, descrição, cor, datas e estado; progresso automático e tarefas por estado. |
 | **Calendário** | Visualizações mensal e semanal com prazos e inícios planejados; arrastar para outro dia muda a data; atrasadas destacadas com discrição. |

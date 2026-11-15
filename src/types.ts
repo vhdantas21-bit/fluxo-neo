@@ -8,6 +8,13 @@ export type DateOnly = string
 /** Instantes no formato ISO 8601 completo. */
 export type Timestamp = string
 
+export type RecurrenceFreq = 'daily' | 'weekly' | 'monthly' | 'yearly'
+export interface Recurrence {
+  freq: RecurrenceFreq
+  /** A cada N dias/semanas/meses/anos (1–365). */
+  interval: number
+}
+
 export interface Subtask {
   id: string
   title: string
@@ -27,6 +34,8 @@ export interface Task {
   projectId: string | null
   categoryId: string | null
   notes: string
+  /** Repetição: ao concluir, a próxima ocorrência é criada em A Fazer. null = não repete. */
+  recurrence: Recurrence | null
   /** Ordem dentro da coluna (menor = mais acima). */
   position: number
   completedAt: Timestamp | null

@@ -63,6 +63,7 @@ export function BacklogPage() {
       projectId: filters.projectId && filters.projectId !== 'none' ? filters.projectId : null,
       categoryId: null,
       notes: '',
+      recurrence: null,
       subtasks: [],
     })
     setQuick('')

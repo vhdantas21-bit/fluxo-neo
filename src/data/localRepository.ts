@@ -19,7 +19,13 @@ export class LocalRepository implements DataRepository {
     try {
       const parsed = JSON.parse(raw) as Partial<AppData>
       const base = empty()
-      return { ...base, ...parsed, profile: { ...base.profile, ...parsed.profile } }
+      return {
+        ...base,
+        ...parsed,
+        // Tarefas guardadas antes da recorrência não têm o campo.
+        tasks: (parsed.tasks ?? []).map((t) => ({ ...t, recurrence: t.recurrence ?? null })),
+        profile: { ...base.profile, ...parsed.profile },
+      }
     } catch {
       throw new Error('Os dados locais estão corrompidos e não puderam ser lidos.')
     }
