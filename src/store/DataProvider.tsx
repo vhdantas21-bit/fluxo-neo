@@ -5,6 +5,7 @@ import { errorMessage, nowISO, uid } from '@/lib/utils'
 import { nextOccurrence } from '@/lib/recurrence'
 import { formatRelative } from '@/lib/dates'
 import { useToast } from '@/components/ui/Toast'
+import type { ImportPlan } from '@/lib/importData'
 
 export type TaskDraft = Omit<Task, 'id' | 'position' | 'completedAt' | 'archivedAt' | 'createdAt' | 'updatedAt'>
 export type ProjectDraft = Omit<Project, 'id' | 'createdAt' | 'updatedAt'>
@@ -42,6 +43,9 @@ interface DataApi {
 
   /** Atualiza só os campos indicados do perfil. */
   updateProfile: (patch: Partial<Profile>) => void
+
+  /** Acrescenta projetos, categorias e tarefas de um arquivo importado (ver lib/importData). */
+  importData: (plan: ImportPlan) => void
 }
 
 const DataContext = createContext<DataApi | null>(null)
@@ -450,6 +454,37 @@ export function DataProvider({ repo, children }: { repo: DataRepository; childre
     [commit, persist, repo],
   )
 
+  // ---- Importação ----------------------------------------------------------
+
+  const importData = useCallback(
+    (plan: ImportPlan) => {
+      const d = dataRef.current
+      // As tarefas importadas entram no fim de cada coluna, mantendo a ordem do arquivo.
+      const last = new Map<TaskStatus, number>()
+      for (const t of d.tasks) last.set(t.status, Math.max(last.get(t.status) ?? -1, t.position))
+      const tasks = [...plan.tasks]
+        .sort((a, b) => a.position - b.position)
+        .map((t) => {
+          const position = (last.get(t.status) ?? -1) + 1
+          last.set(t.status, position)
+          return { ...t, position }
+        })
+      commit({
+        ...d,
+        projects: [...d.projects, ...plan.projects],
+        categories: [...d.categories, ...plan.categories],
+        tasks: [...d.tasks, ...tasks],
+      })
+      // Projetos e categorias primeiro (as tarefas apontam para eles); tarefas em lotes.
+      persist(async () => {
+        for (const p of plan.projects) await repo.saveProject(p)
+        for (const c of plan.categories) await repo.saveCategory(c)
+        for (let i = 0; i < tasks.length; i += 200) await repo.saveTasks(tasks.slice(i, i + 200))
+      })
+    },
+    [commit, persist, repo],
+  )
+
   const updateProfile = useCallback(
     (patch: Partial<Profile>) => {
       const profile = { ...dataRef.current.profile, ...patch }
@@ -484,11 +519,12 @@ export function DataProvider({ repo, children }: { repo: DataRepository; childre
       updateCategory,
       deleteCategory,
       updateProfile,
+      importData,
     }),
     [
       data, state, loadError, pending, repo.kind, reload, createTask, updateTask, moveTask, moveTasks,
       setTasksStartDate, duplicateTask, archiveTasks, restoreTasks, deleteTasks, toggleSubtask, createProject,
-      updateProject, deleteProject, createCategory, updateCategory, deleteCategory, updateProfile,
+      updateProject, deleteProject, createCategory, updateCategory, deleteCategory, updateProfile, importData,
     ],
   )
 

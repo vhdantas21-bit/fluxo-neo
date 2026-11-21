@@ -17,6 +17,7 @@ import { useTaskModal } from '@/components/tasks/TaskModalProvider'
 import { useData } from '@/store/DataProvider'
 import { BOARD_STATUSES, STATUS_HINT, STATUS_LABEL, type BoardStatus, type Task } from '@/types'
 import { cn } from '@/lib/utils'
+import { dismissHint } from '@/components/ui/TouchHint'
 import { STATUS_THEME } from '@/components/tasks/statusTheme'
 import { makeAnnouncements, screenReaderInstructions, useBoardSensors } from './dnd'
 
@@ -125,6 +126,7 @@ export function KanbanBoard({ tasks, mobileColumn, filtered }: Props) {
     const cols = dragColsRef.current
     const id = String(active.id)
     if (!over || !cols) return finish()
+    dismissHint('board-drag') // já aprendeu o gesto
     const to = findColumn(over.id, cols)
     if (!to) return finish()
     let visible = cols[to]

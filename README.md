@@ -31,7 +31,7 @@ Outros comandos: `npm run typecheck`, `npm run build`, `npm run preview`.
 5. **Authentication → URL Configuration**: em *Site URL* coloque o endereço do app (ex.: `http://localhost:5173` ou o domínio de produção) e adicione `<endereço>/redefinir-senha` em *Redirect URLs* (necessário para a recuperação de senha).
 6. Reinicie `npm run dev`. A tela de login aparece automaticamente.
 
-Os dados do modo local não são migrados automaticamente; use **Configurações → Exportar dados** para salvar uma cópia em JSON.
+Os dados do modo local não são migrados automaticamente: use **Configurações → Exportar dados** no modo local e depois **Importar dados** já com a conta.
 
 ### Segurança
 
@@ -74,6 +74,8 @@ O GitHub desativa automações agendadas em repositórios públicos sem nenhum c
 | **Projetos** | Nome, descrição, cor, datas e estado; progresso automático e tarefas por estado. |
 | **Resumo da semana** | Navega semana a semana: concluídas (comparadas com a semana anterior), criadas, prazos da semana e atrasadas; gráfico de conclusões por dia e listas das tarefas concluídas e dos prazos. |
 | **Estatísticas** | Concluídas por semana e por mês, distribuição por estado, atrasadas, histórico de conclusão e progresso por projeto. |
+| **Backup** | Em Configurações: **Exportar dados** (JSON) e **Importar dados**. A importação só acrescenta (nada é apagado nem sobrescrito), mostra um resumo antes, ignora o que já existe (mesmo id, ou mesmo título com a mesma data de criação, então reimportar não duplica), valida cada campo com as regras do banco e refaz as ligações com projetos e categorias ([`src/lib/importData.ts`](src/lib/importData.ts)). |
+| **Dicas de toque** | Em celular/tablet, o quadro e o calendário mostram uma vez como arrastar ("toque e segure"). Some ao tocar em “Entendi” ou depois do primeiro arrasto ([`TouchHint`](src/components/ui/TouchHint.tsx)). |
 | **Pesquisa** | Barra no topo (título e descrição) + filtros por estado, prioridade, projeto, categoria, prazo e atrasadas; ordenação por data limite, prioridade e criação. |
 
 ### Tela de carregamento (preload)

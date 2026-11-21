@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react'
-import { Camera, Check, Download, HardDrive, LogOut, Plus, Trash } from 'lucide-react'
+import { useRef, useState, type ChangeEvent, type FormEvent } from 'react'
+import { Camera, Check, Download, HardDrive, LogOut, Plus, Trash, Upload } from 'lucide-react'
 import { useAuth } from '@/auth/AuthProvider'
 import { Avatar, useAvatarPicker, useDisplayName } from '@/components/profile/Avatar'
 import { Button } from '@/components/ui/Button'
@@ -10,6 +10,7 @@ import { useToast } from '@/components/ui/Toast'
 import { useData } from '@/store/DataProvider'
 import { PALETTE_SWATCHES } from '@/types'
 import { errorMessage, pluralize } from '@/lib/utils'
+import { ImportError, planImport } from '@/lib/importData'
 
 const SHORTCUTS: Array<[string, string]> = [
   ['N', 'Nova tarefa'],
@@ -22,7 +23,9 @@ const SHORTCUTS: Array<[string, string]> = [
 
 export function SettingsPage() {
   const { mode, user, signOut } = useAuth()
-  const { data, updateProfile, createCategory, updateCategory, deleteCategory, repoKind } = useData()
+  const { data, updateProfile, createCategory, updateCategory, deleteCategory, repoKind, importData } = useData()
+  const importInput = useRef<HTMLInputElement>(null)
+  const [importing, setImporting] = useState(false)
   const confirm = useConfirm()
   const toast = useToast()
   const displayName = useDisplayName()
@@ -55,6 +58,46 @@ export function SettingsPage() {
     a.download = `fluxo-neo-${new Date().toISOString().slice(0, 10)}.json`
     a.click()
     URL.revokeObjectURL(url)
+  }
+
+  const onImportFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = '' // permite escolher o mesmo arquivo de novo
+    if (!file) return
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error('O arquivo passa de 20 MB.')
+      return
+    }
+    setImporting(true)
+    try {
+      const plan = planImport(await file.text(), data)
+      const total = plan.tasks.length + plan.projects.length + plan.categories.length
+      if (total === 0) {
+        toast.success(plan.skipped ? 'Tudo neste arquivo já está nos seus dados. Nada a importar.' : 'O arquivo não tem itens para importar.')
+        return
+      }
+      const parts = [
+        plan.tasks.length ? pluralize(plan.tasks.length, 'tarefa', 'tarefas') : '',
+        plan.projects.length ? pluralize(plan.projects.length, 'projeto', 'projetos') : '',
+        plan.categories.length ? pluralize(plan.categories.length, 'categoria', 'categorias') : '',
+      ].filter(Boolean)
+      const notes = [
+        plan.skipped ? (plan.skipped === 1 ? '1 item já existe e será ignorado.' : `${plan.skipped} itens já existem e serão ignorados.`) : '',
+        plan.invalid ? `${pluralize(plan.invalid, 'registro inválido será descartado', 'registros inválidos serão descartados')}.` : '',
+      ].filter(Boolean)
+      const ok = await confirm({
+        title: 'Importar dados?',
+        message: `Serão adicionados: ${parts.join(', ')}. ${notes.join(' ')} Nada do que você já tem será apagado ou alterado.`,
+        confirmLabel: 'Importar',
+      })
+      if (!ok) return
+      importData(plan)
+      toast.success(`Importação concluída: ${parts.join(', ')}.`)
+    } catch (err) {
+      toast.error(err instanceof ImportError ? err.message : `Não foi possível ler o arquivo: ${errorMessage(err)}`)
+    } finally {
+      setImporting(false)
+    }
   }
 
   return (
@@ -242,6 +285,10 @@ export function SettingsPage() {
             <Button onClick={exportData}>
               <Download size={15} aria-hidden /> Exportar dados (JSON)
             </Button>
+            <Button onClick={() => importInput.current?.click()} disabled={importing}>
+              <Upload size={15} aria-hidden /> {importing ? 'Lendo arquivo…' : 'Importar dados (JSON)'}
+            </Button>
+            <input ref={importInput} type="file" accept="application/json,.json" className="sr-only" tabIndex={-1} aria-hidden onChange={onImportFile} />
             <span className="text-xs text-fg-subtle">
               {data.tasks.length} tarefas · {data.projects.length} projetos · armazenamento: {repoKind === 'local' ? 'navegador' : 'Supabase'}
             </span>

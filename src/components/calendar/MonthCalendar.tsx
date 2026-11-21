@@ -23,6 +23,7 @@ import {
   todayISO,
 } from '@/lib/dates'
 import { cn } from '@/lib/utils'
+import { TouchHint, dismissHint } from '@/components/ui/TouchHint'
 import type { Task } from '@/types'
 
 interface Entry {
@@ -75,6 +76,7 @@ export function MonthCalendar() {
   const onDragEnd = ({ active, over }: DragEndEvent) => {
     setDragging(null)
     if (!over) return
+    dismissHint('calendar-drag')
     const entry = active.data.current as Entry
     const day = String(over.id).replace('day:', '')
     const t = data.tasks.find((x) => x.id === entry.task.id)
@@ -120,6 +122,11 @@ export function MonthCalendar() {
           Hoje
         </Button>
       </div>
+
+      {/* No celular o mês mostra só pontos (sem arrastar); a dica vale para tablets. */}
+      <TouchHint id="calendar-drag" className="mb-3 hidden sm:flex">
+        Toque e segure uma tarefa no calendário para arrastá-la para outro dia. A data muda sozinha.
+      </TouchHint>
 
       <div className="mb-3 flex flex-wrap gap-4 text-xs text-fg-subtle">
         <span className="inline-flex items-center gap-1.5">

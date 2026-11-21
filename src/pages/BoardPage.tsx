@@ -4,6 +4,7 @@ import { Inbox } from 'lucide-react'
 import { KanbanBoard } from '@/components/board/KanbanBoard'
 import { TaskFiltersBar } from '@/components/tasks/TaskFiltersBar'
 import { PageHeader } from '@/components/ui/misc'
+import { TouchHint } from '@/components/ui/TouchHint'
 import { useData } from '@/store/DataProvider'
 import { activeTasks, countActiveFilters, emptyFilters, filterTasks, type TaskFilters } from '@/store/selectors'
 import { BOARD_STATUSES, STATUS_LABEL, type BoardStatus } from '@/types'
@@ -61,6 +62,16 @@ export function BoardPage() {
           )
         })}
       </div>
+
+      <TouchHint id="board-drag" className="mb-4">
+        <span className="md:hidden">
+          <strong className="font-medium text-fg">Toque e segure</strong> um cartão para mudar a ordem. Para trocar de coluna, use o
+          seletor de estado no próprio cartão.
+        </span>
+        <span className="hidden md:inline">
+          <strong className="font-medium text-fg">Toque e segure</strong> um cartão para arrastá-lo para outra posição ou coluna.
+        </span>
+      </TouchHint>
 
       <KanbanBoard tasks={visible} mobileColumn={mobileColumn} filtered={filtered} />
     </div>
