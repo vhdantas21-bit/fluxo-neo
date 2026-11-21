@@ -126,6 +126,29 @@
   box-shadow: inset 0 3px 0 var(--brand-bar, var(--brand)), var(--shadow-card);
 }
 
+/* Faixa de cor de 3 px no topo do cartão (cor via --bar). Desenhada num ::before para não
+   depender da borda (que surface-panel redefine) nem da sombra (que muda no hover). */
+@utility accent-bar {
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: inset 0 3px 0 var(--bar, var(--color-brand-blue));
+  }
+}
+
+/* Preenchimento de gráfico com volume: degradê de luz, brilho de 1 px e sombra na cor (--bar). */
+@utility bar-gloss {
+  --bar: var(--color-sky);
+  background: linear-gradient(180deg, color-mix(in srgb, #fff 26%, var(--bar)) 0%, var(--bar) 55%, color-mix(in srgb, #000 16%, var(--bar)) 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    0 6px 14px -6px color-mix(in srgb, var(--bar) 70%, transparent);
+}
+
 /* Superfície elevada: leve degradê de luz (topo mais claro) + elevação macia */
 @utility surface-raised {
   background-image: linear-gradient(180deg, var(--raised-top), var(--raised-bottom));
@@ -267,3 +290,12 @@
   filter: none;
 }
 
+/* Faixa branca do logo: no tema claro ganha um contorno para não sumir no fundo branco. */
+.brand-stripe-white {
+  stroke: transparent;
+}
+:root[data-theme='light'] .brand-stripe-white {
+  stroke: #b8b8be;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}

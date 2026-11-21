@@ -50,8 +50,8 @@ export function ProgressBar({ value, color, label }: { value: number; color?: st
       className="h-1.5 w-full overflow-hidden rounded-full bg-surface-3"
     >
       <div
-        className="h-full rounded-full transition-[width] duration-500 ease-out"
-        style={{ width: `${pct}%`, background: color ?? 'var(--color-primary)' }}
+        className="bar-gloss h-full rounded-full transition-[width] duration-500 ease-out"
+        style={{ width: `${pct}%`, ['--bar' as string]: color ?? 'var(--color-primary)' }}
       />
     </div>
   )

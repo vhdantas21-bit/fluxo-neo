@@ -148,7 +148,7 @@ function BrandStripes() {
     >
       {stripes.map((color, i) => {
         const x = i * 30
-        return <polygon key={color} points={`${x},64 ${x + 24},64 ${x + 60},0 ${x + 36},0`} fill={color} />
+        return <polygon key={color} points={`${x},64 ${x + 24},64 ${x + 60},0 ${x + 36},0`} fill={color} className={color === '#FEFEFE' ? 'brand-stripe-white' : undefined} />
       })}
     </svg>
   )

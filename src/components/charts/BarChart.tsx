@@ -59,8 +59,8 @@ export function BarChart({ data, unit, height = 160, caption, highlight }: Props
                 </span>
               )}
               <div
-                className="w-full max-w-9 rounded-t-[4px] transition-[height,filter] duration-500 ease-out group-hover:brightness-125"
-                style={{ height: `${Math.max(h, d.value > 0 ? 2 : 0)}%`, background: SERIES_COLOR }}
+                className="bar-gloss w-full max-w-9 rounded-t-[6px] transition-[height,filter] duration-500 ease-out group-hover:brightness-115"
+                style={{ height: `${Math.max(h, d.value > 0 ? 2 : 0)}%` }}
               />
             </div>
           )

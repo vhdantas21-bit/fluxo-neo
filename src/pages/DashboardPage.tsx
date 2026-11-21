@@ -193,9 +193,9 @@ export function DashboardPage() {
 
 /** Acento de cada card: azul da marca (A Fazer), laranja (Fazendo), branco/cinza claro (Feito). */
 const statAccent: Record<Exclude<TaskStatus, 'backlog'>, { border: string; text: string; orb: string }> = {
-  todo: { border: 'border-t-primary', text: 'text-primary-text', orb: '[--orb:var(--color-primary)]' },
-  doing: { border: 'border-t-accent', text: 'text-ember-fg', orb: '[--orb:var(--color-accent)]' },
-  done: { border: 'border-t-fg', text: 'text-fg', orb: '[--orb:#5a5a5a]' },
+  todo: { border: '[--bar:var(--color-brand-blue)]', text: 'text-primary-text', orb: '[--orb:var(--color-primary)]' },
+  doing: { border: '[--bar:var(--color-brand-orange)]', text: 'text-ember-fg', orb: '[--orb:var(--color-accent)]' },
+  done: { border: '[--bar:var(--color-fg)]', text: 'text-fg', orb: '[--orb:#5a5a5a]' },
 }
 
 function Stat({ status, icon, label, value, hint }: { status: Exclude<TaskStatus, 'backlog'>; icon: ReactNode; label: string; value: number; hint: string }) {
@@ -205,7 +205,7 @@ function Stat({ status, icon, label, value, hint }: { status: Exclude<TaskStatus
     <Link
       to="/quadro"
       className={cn(
-        'surface-panel group rounded-2xl border-t-[3px] p-5 transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-lift',
+        'surface-panel accent-bar group rounded-2xl p-5 transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-lift',
         theme.line,
         accent.border,
       )}
@@ -226,9 +226,9 @@ function Stat({ status, icon, label, value, hint }: { status: Exclude<TaskStatus
 }
 
 const panelTone = {
-  sky: { border: 'border-t-primary', icon: 'text-primary-text' },
-  ember: { border: 'border-t-accent', icon: 'text-accent-text' },
-  navy: { border: 'border-t-navy', icon: 'text-navy-fg' },
+  sky: { border: '[--bar:var(--color-brand-blue)]', icon: 'text-primary-text' },
+  ember: { border: '[--bar:var(--color-brand-orange)]', icon: 'text-accent-text' },
+  navy: { border: '[--bar:var(--color-navy)]', icon: 'text-navy-fg' },
 }
 
 function Panel({
@@ -247,7 +247,7 @@ function Panel({
   children: ReactNode
 }) {
   return (
-    <section className={cn('surface-panel rounded-2xl border-t-[3px] p-5', panelTone[tone].border, className)}>
+    <section className={cn('surface-panel accent-bar rounded-2xl p-5', panelTone[tone].border, className)}>
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 className="flex items-center gap-2 text-sm font-semibold">
           <span className={panelTone[tone].icon} aria-hidden>

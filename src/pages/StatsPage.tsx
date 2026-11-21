@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { ChartColumn } from 'lucide-react'
-import { BarChart, SERIES_COLOR } from '@/components/charts/BarChart'
+import { BarChart } from '@/components/charts/BarChart'
 import { Card, EmptyState, PageHeader, ProgressBar } from '@/components/ui/misc'
 import { ColorDot } from '@/components/tasks/TaskBits'
 import { useTaskModal } from '@/components/tasks/TaskModalProvider'
@@ -84,8 +84,8 @@ export function StatsPage() {
                 <span className="text-fg-muted">{STATUS_LABEL[s]}</span>
                 <span className="h-5 overflow-hidden rounded-r-[4px] bg-surface-2">
                   <span
-                    className="block h-full rounded-r-[4px] transition-[width] duration-500"
-                    style={{ width: `${(counts[s] / maxCount) * 100}%`, background: SERIES_COLOR }}
+                    className="bar-gloss block h-full rounded-r-[4px] transition-[width] duration-500"
+                    style={{ width: `${(counts[s] / maxCount) * 100}%` }}
                   />
                 </span>
                 <span className="text-right font-semibold tabular-nums">{counts[s]}</span>

@@ -100,7 +100,7 @@ export function WeekSummaryPage() {
         />
       </div>
 
-      <section className="surface-panel mb-4 rounded-2xl border-t-[3px] border-t-navy p-5">
+      <section className="surface-panel accent-bar mb-4 rounded-2xl p-5 [--bar:var(--color-navy)]">
         <h2 className="flex items-center gap-2 text-sm font-semibold">
           <ChartColumn size={16} className="text-navy-fg" aria-hidden />
           Tarefas concluídas por dia
@@ -116,7 +116,7 @@ export function WeekSummaryPage() {
       </section>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <section className="surface-panel rounded-2xl border-t-[3px] border-t-primary p-5">
+        <section className="surface-panel accent-bar rounded-2xl p-5 [--bar:var(--color-brand-blue)]">
           <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold">
             <CircleCheck size={16} className="text-primary-text" aria-hidden />
             Concluídas na semana
@@ -149,7 +149,7 @@ export function WeekSummaryPage() {
           )}
         </section>
 
-        <section className="surface-panel rounded-2xl border-t-[3px] border-t-accent p-5">
+        <section className="surface-panel accent-bar rounded-2xl p-5 [--bar:var(--color-brand-orange)]">
           <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold">
             <CalendarClock size={16} className="text-accent-text" aria-hidden />
             Prazos da semana
