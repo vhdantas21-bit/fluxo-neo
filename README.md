@@ -76,6 +76,10 @@ O GitHub desativa automações agendadas em repositórios públicos sem nenhum c
 | **Estatísticas** | Concluídas por semana e por mês, distribuição por estado, atrasadas, histórico de conclusão e progresso por projeto. |
 | **Pesquisa** | Barra no topo (título e descrição) + filtros por estado, prioridade, projeto, categoria, prazo e atrasadas; ordenação por data limite, prioridade e criação. |
 
+### Tela de carregamento (preload)
+
+O preload fica direto no [`index.html`](index.html), em HTML e CSS, então aparece antes de o JavaScript baixar. Mostra o logo se montando, o nome FLUXO NEO e as 5 faixas da marca em onda, e segue o tema claro/escuro guardado. O app o remove com um fade quando a primeira tela real está pronta: os dados carregados (`AppShell`) ou a tela de login (`App.tsx`), via `useHidePreload` em [`src/lib/preload.ts`](src/lib/preload.ts). Fica no mínimo ~0,45 s na tela para não piscar e sai sozinho após 12 s se algo falhar. Com "reduzir movimento" ativado no sistema, fica sem animação.
+
 ### Atalhos
 
 `N` nova tarefa · `/` ou `Ctrl/⌘ + K` pesquisar · `Ctrl/⌘ + Enter` salvar · `Esc` fechar · num cartão: `Espaço` pegar/soltar, setas mover, `Enter` abrir.

@@ -10,6 +10,7 @@ import ExpandableSearchBar from '@/components/ui/expandable-search-bar'
 import NovaTarefaButton from '@/components/NovaTarefaButton'
 import { SunMoonThemeToggle } from '@/components/ui/sun-moon-theme-toggle'
 import { THEME_STORAGE_KEY } from '@/lib/theme'
+import { useHidePreload } from '@/lib/preload'
 import { Modal } from '@/components/ui/Modal'
 import { Spinner } from '@/components/ui/misc'
 import { useToast } from '@/components/ui/Toast'
@@ -22,6 +23,8 @@ const isTyping = (el: EventTarget | null) =>
 
 export function AppShell() {
   const { state, loadError, reload } = useData()
+  // Primeira tela real (dados carregados ou erro): o preload do index.html pode sair.
+  useHidePreload(state !== 'loading')
   const { openNewTask } = useTaskModal()
   const [searchOpen, setSearchOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)

@@ -8,6 +8,7 @@ import { DataProvider } from '@/store/DataProvider'
 import { ToastProvider } from '@/components/ui/Toast'
 import { ConfirmProvider } from '@/components/ui/Confirm'
 import { Spinner } from '@/components/ui/misc'
+import { useHidePreload } from '@/lib/preload'
 import { TaskModalProvider } from '@/components/tasks/TaskModalProvider'
 import { AppShell } from '@/components/layout/AppShell'
 import { DashboardPage } from '@/pages/DashboardPage'
@@ -38,6 +39,8 @@ export default function App() {
 
 function AppRoutes() {
   const { mode, loading, session, recovering } = useAuth()
+  // Telas de login/redefinição já estão prontas; o painel avisa sozinho quando os dados chegam (AppShell).
+  useHidePreload(!loading && ((mode === 'supabase' && !session) || recovering))
 
   if (loading)
     return (
