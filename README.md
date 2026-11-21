@@ -43,7 +43,7 @@ Os dados do modo local não são migrados automaticamente; use **Configurações
 
 ## Publicar na Vercel
 
-O projeto já vem configurado para a Vercel em [`vercel.json`](vercel.json): build com Vite, saída em `dist/`, todas as rotas (`/quadro`, `/calendario`…) servindo `index.html`, cache longo para os arquivos em `/assets` e cabeçalhos básicos de segurança. A versão do Node fica fixada em `engines` no `package.json`.
+O projeto já vem configurado para a Vercel em [`vercel.json`](vercel.json): build com Vite, saída em `dist/`, todas as rotas (`/quadro`, `/semana`…) servindo `index.html`, cache longo para os arquivos em `/assets` e cabeçalhos básicos de segurança. A versão do Node fica fixada em `engines` no `package.json`.
 
 1. Entre em [vercel.com](https://vercel.com) com **Continue with GitHub** (conta gratuita *Hobby*).
 2. **Add New… → Project** e importe o repositório `fluxo-neo`. Se ele não aparecer, clique em *Adjust GitHub App Permissions* e libere o repositório.
@@ -67,12 +67,12 @@ O GitHub desativa automações agendadas em repositórios públicos sem nenhum c
 
 | Área | O que faz |
 |---|---|
-| **Início** | Saudação, data, contadores (A Fazer / Fazendo / Feito), % das tarefas previstas para hoje, prioritárias, próximos prazos e resumo da semana — tudo calculado dos dados reais. |
+| **Início** | Saudação, data, contadores (A Fazer / Fazendo / Feito), % das tarefas previstas para hoje, prioritárias, próximos prazos e o **calendário do mês** (prazos e inícios planejados; arrastar uma tarefa para outro dia muda a data) — tudo calculado dos dados reais. |
 | **Meu quadro** | 3 colunas com contagem, botão “+”, adição rápida e área de soltar. Arrastar entre colunas e reordenar (mouse, toque e teclado). Limite configurável em “Fazendo” (WIP). No celular: uma coluna por vez + seletor de estado em cada cartão. |
 | **Tarefas** | Título (obrigatório), descrição, estado, prioridade, datas de início e limite, projeto, categoria, subtarefas, notas e **repetição** (diária, semanal, mensal ou anual, a cada N). Ao concluir uma tarefa recorrente, a próxima ocorrência nasce em “A Fazer” com as datas avançadas e as subtarefas desmarcadas. Editar, duplicar, arquivar, excluir (com confirmação) e **Desfazer**. |
 | **Backlog** | Anotação rápida, pesquisa, filtros, seleção múltipla, mover para “A Fazer”, definir data de execução, arquivar e aba **Arquivo** para restaurar. |
 | **Projetos** | Nome, descrição, cor, datas e estado; progresso automático e tarefas por estado. |
-| **Calendário** | Visualizações mensal e semanal com prazos e inícios planejados; arrastar para outro dia muda a data; atrasadas destacadas com discrição. |
+| **Resumo da semana** | Navega semana a semana: concluídas (comparadas com a semana anterior), criadas, prazos da semana e atrasadas; gráfico de conclusões por dia e listas das tarefas concluídas e dos prazos. |
 | **Estatísticas** | Concluídas por semana e por mês, distribuição por estado, atrasadas, histórico de conclusão e progresso por projeto. |
 | **Pesquisa** | Barra no topo (título e descrição) + filtros por estado, prioridade, projeto, categoria, prazo e atrasadas; ordenação por data limite, prioridade e criação. |
 

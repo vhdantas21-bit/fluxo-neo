@@ -39,12 +39,11 @@ export function completedPerMonth(tasks: Task[], months = 6) {
   })
 }
 
-/** Conclusões por dia da semana atual (seg–dom). */
-export function completedThisWeekByDay(tasks: Task[]) {
-  const start = startOfWeek(new Date())
+/** Conclusões por dia (seg–dom) da semana que começa em `weekStart`. */
+export function completedByDay(tasks: Task[], weekStart: Date) {
   const names = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
   return names.map((label, i) => {
-    const day = toDateOnly(addDays(start, i))
+    const day = toDateOnly(addDays(weekStart, i))
     return { label, fullLabel: formatShort(day), value: tasks.filter((t) => completedOn(t) === day).length }
   })
 }

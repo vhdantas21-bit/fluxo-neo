@@ -1,17 +1,16 @@
 import { useMemo, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Camera, CalendarClock, CalendarCheck, CalendarX2, ChartColumn, CircleCheck, CircleDashed, Flame, Plus, Timer } from 'lucide-react'
+import { ArrowRight, Camera, CalendarClock, CalendarCheck, CalendarDays, CalendarX2, CircleCheck, CircleDashed, Flame, Plus, Timer } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { EmptyState, ProgressBar } from '@/components/ui/misc'
-import { BarChart } from '@/components/charts/BarChart'
+import { MonthCalendar } from '@/components/calendar/MonthCalendar'
 import { ColorDot, DueChip, PriorityBadge, StatusBadge } from '@/components/tasks/TaskBits'
 import { STATUS_THEME } from '@/components/tasks/statusTheme'
 import { useTaskModal } from '@/components/tasks/TaskModalProvider'
 import { Avatar, useAvatarPicker, useDisplayName } from '@/components/profile/Avatar'
 import { useData } from '@/store/DataProvider'
-import { activeTasks, completedOn, countByStatus, priorityTasks, todayProgress, upcomingDeadlines } from '@/store/selectors'
-import { completedThisWeekByDay } from '@/store/history'
-import { addDays, formatLong, isOverdue, startOfWeek, toDateOnly } from '@/lib/dates'
+import { activeTasks, countByStatus, priorityTasks, todayProgress, upcomingDeadlines } from '@/store/selectors'
+import { formatLong } from '@/lib/dates'
 import { cn } from '@/lib/utils'
 import type { Task, TaskStatus } from '@/types'
 
@@ -24,16 +23,6 @@ export function DashboardPage() {
   const priorities = priorityTasks(tasks).slice(0, 5)
   const deadlines = upcomingDeadlines(tasks, 7).slice(0, 6)
   const focus = tasks.filter((t) => t.status === 'doing').slice(0, 3)
-  const weekDays = completedThisWeekByDay(data.tasks)
-
-  const weekStart = toDateOnly(startOfWeek(new Date()))
-  const weekEnd = toDateOnly(addDays(startOfWeek(new Date()), 6))
-  const doneThisWeek = data.tasks.filter((t) => {
-    const d = completedOn(t)
-    return d && d >= weekStart && d <= weekEnd
-  }).length
-  const createdThisWeek = data.tasks.filter((t) => toDateOnly(new Date(t.createdAt)) >= weekStart).length
-  const overdue = tasks.filter((t) => isOverdue(t.dueDate, t.status)).length
 
   const name = useDisplayName()
   const avatarPicker = useAvatarPicker()
@@ -168,7 +157,7 @@ export function DashboardPage() {
             )}
           </Panel>
 
-          <Panel tone="sky" icon={<CalendarClock size={16} />} title="Próximos prazos" to="/calendario">
+          <Panel tone="sky" icon={<CalendarClock size={16} />} title="Próximos prazos" to="/semana">
             {deadlines.length ? (
               <ul className="-mx-2 flex flex-col">
                 {deadlines.map((t) => (
@@ -189,34 +178,13 @@ export function DashboardPage() {
             )}
           </Panel>
 
-          <Panel className="lg:col-span-3" tone="navy" icon={<ChartColumn size={16} />} title="Resumo da semana" to="/estatisticas">
-            <div className="flex flex-col gap-6 md:flex-row md:items-center">
-              <dl className="grid grid-cols-3 gap-4 md:w-64 md:grid-cols-1">
-                <div>
-                  <dt className="text-xs text-fg-subtle">Concluídas</dt>
-                  <dd className="text-2xl font-semibold text-navy-fg tabular-nums">{doneThisWeek}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs text-fg-subtle">Criadas</dt>
-                  <dd className="text-2xl font-semibold text-sky-fg tabular-nums">{createdThisWeek}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs text-fg-subtle">Com prazo vencido</dt>
-                  <dd className={cn('text-2xl font-semibold tabular-nums', overdue ? 'text-accent-text' : 'text-fg')}>{overdue}</dd>
-                </div>
-              </dl>
-              <div className="min-w-0 flex-1">
-                <p className="mb-3 text-xs text-fg-subtle">Tarefas concluídas por dia</p>
-                <BarChart
-                  data={weekDays}
-                  unit="tarefas concluídas"
-                  height={120}
-                  highlight={(new Date().getDay() + 6) % 7}
-                  caption="Tarefas concluídas por dia nesta semana"
-                />
-              </div>
-            </div>
-          </Panel>
+          <section className="lg:col-span-3" aria-labelledby="inicio-calendario">
+            <h2 id="inicio-calendario" className="mb-3 flex items-center gap-2 text-sm font-semibold">
+              <CalendarDays size={16} className="text-navy-fg" aria-hidden />
+              Calendário do mês
+            </h2>
+            <MonthCalendar />
+          </section>
         </div>
       )}
     </div>

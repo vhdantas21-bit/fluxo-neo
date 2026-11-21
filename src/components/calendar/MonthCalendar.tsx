@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react'
 import { DndContext, DragOverlay, useDraggable, useDroppable, type DragEndEvent } from '@dnd-kit/core'
 import { ChevronLeft, ChevronRight, Flag, Play } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { PageHeader } from '@/components/ui/misc'
 import { useToast } from '@/components/ui/Toast'
 import { useTaskModal } from '@/components/tasks/TaskModalProvider'
 import { StatusBadge } from '@/components/tasks/TaskBits'
@@ -26,7 +25,6 @@ import {
 import { cn } from '@/lib/utils'
 import type { Task } from '@/types'
 
-type View = 'month' | 'week'
 interface Entry {
   key: string
   task: Task
@@ -35,12 +33,15 @@ interface Entry {
 
 const WEEKDAYS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
 
-export function CalendarPage() {
+/**
+ * Calendário mensal com prazos e inícios planejados. Arrastar uma tarefa
+ * para outro dia muda a data; clicar num dia mostra as tarefas dele.
+ */
+export function MonthCalendar() {
   const { data, updateTask } = useData()
   const { openTask } = useTaskModal()
   const toast = useToast()
   const sensors = usePointerSensors()
-  const [view, setView] = useState<View>(() => (window.innerWidth < 640 ? 'week' : 'month'))
   const [cursor, setCursor] = useState(() => new Date())
   const [selected, setSelected] = useState(todayISO())
   const [dragging, setDragging] = useState<Entry | null>(null)
@@ -59,13 +60,17 @@ export function CalendarPage() {
   }, [data.tasks])
 
   const days = useMemo(() => {
-    const first = view === 'month' ? startOfWeek(startOfMonth(cursor)) : startOfWeek(cursor)
-    return Array.from({ length: view === 'month' ? 42 : 7 }, (_, i) => addDays(first, i))
-  }, [cursor, view])
+    const first = startOfWeek(startOfMonth(cursor))
+    // Só as semanas que o mês ocupa (4 a 6 linhas), para o calendário não crescer à toa.
+    const month = startOfMonth(cursor)
+    const lead = Math.round((month.getTime() - first.getTime()) / 86_400_000)
+    const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate()
+    const weeks = Math.ceil((lead + daysInMonth) / 7)
+    return Array.from({ length: weeks * 7 }, (_, i) => addDays(first, i))
+  }, [cursor])
 
-  const move = (n: number) => setCursor((c) => (view === 'month' ? addMonths(c, n) : addDays(c, 7 * n)))
-  const title =
-    view === 'month' ? formatMonth(cursor) : `${formatShort(toDateOnly(days[0]))} – ${formatShort(toDateOnly(days[6]))}`
+  const move = (n: number) => setCursor((c) => addMonths(c, n))
+  const title = formatMonth(cursor)
 
   const onDragEnd = ({ active, over }: DragEndEvent) => {
     setDragging(null)
@@ -92,24 +97,19 @@ export function CalendarPage() {
   const today = todayISO()
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <PageHeader
-        title="Calendário"
-        description="Prazos e datas de execução planejadas. Arraste uma tarefa para outro dia para mudar a data."
-      />
-
+    <div>
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="flex items-center gap-1">
-          <Button size="icon-sm" variant="ghost" onClick={() => move(-1)} aria-label={view === 'month' ? 'Mês anterior' : 'Semana anterior'}>
+          <Button size="icon-sm" variant="ghost" onClick={() => move(-1)} aria-label="Mês anterior">
             <ChevronLeft size={18} />
           </Button>
-          <Button size="icon-sm" variant="ghost" onClick={() => move(1)} aria-label={view === 'month' ? 'Mês seguinte' : 'Semana seguinte'}>
+          <Button size="icon-sm" variant="ghost" onClick={() => move(1)} aria-label="Mês seguinte">
             <ChevronRight size={18} />
           </Button>
         </div>
-        <h2 className="min-w-40 text-lg font-semibold first-letter:uppercase" aria-live="polite">
+        <h3 className="min-w-40 text-lg font-semibold first-letter:uppercase" aria-live="polite">
           {title}
-        </h2>
+        </h3>
         <Button
           size="sm"
           onClick={() => {
@@ -119,20 +119,6 @@ export function CalendarPage() {
         >
           Hoje
         </Button>
-        <div role="tablist" aria-label="Visualização" className="ml-auto flex rounded-lg border border-line bg-surface p-0.5">
-          {(['month', 'week'] as View[]).map((v) => (
-            <button
-              key={v}
-              role="tab"
-              type="button"
-              aria-selected={view === v}
-              onClick={() => setView(v)}
-              className={cn('h-8 rounded-md px-3 text-[13px] font-medium', view === v ? 'bg-deep text-fg' : 'text-fg-subtle hover:text-fg')}
-            >
-              {v === 'month' ? 'Mês' : 'Semana'}
-            </button>
-          ))}
-        </div>
       </div>
 
       <div className="mb-3 flex flex-wrap gap-4 text-xs text-fg-subtle">
@@ -153,16 +139,16 @@ export function CalendarPage() {
         onDragCancel={() => setDragging(null)}
         onDragEnd={onDragEnd}
       >
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
-          <div className="surface-panel overflow-hidden rounded-2xl">
-            <div className={cn('grid grid-cols-7 border-b border-line', view === 'week' && 'max-sm:hidden')}>
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_280px]">
+          <div className="surface-panel overflow-hidden rounded-2xl border-t-[3px] border-t-navy">
+            <div className="grid grid-cols-7 border-b border-line">
               {WEEKDAYS.map((d) => (
                 <div key={d} className="px-2 py-2 text-center text-[11px] font-medium tracking-wide text-fg-subtle uppercase">
                   {d}
                 </div>
               ))}
             </div>
-            <div className={cn('grid', view === 'month' ? 'grid-cols-7' : 'grid-cols-1 sm:grid-cols-7')}>
+            <div className="grid grid-cols-7">
               {days.map((d) => {
                 const iso = toDateOnly(d)
                 return (
@@ -170,9 +156,8 @@ export function CalendarPage() {
                     key={iso}
                     iso={iso}
                     date={d}
-                    view={view}
                     entries={byDay.get(iso) ?? []}
-                    outside={view === 'month' && iso.slice(0, 7) !== monthKey}
+                    outside={iso.slice(0, 7) !== monthKey}
                     isToday={iso === today}
                     selected={iso === selected}
                     onSelect={() => setSelected(iso)}
@@ -183,7 +168,7 @@ export function CalendarPage() {
             </div>
           </div>
 
-          <aside className="surface-panel rounded-2xl p-4" aria-live="polite">
+          <aside className="surface-panel rounded-2xl border-t-[3px] border-t-navy p-4" aria-live="polite">
             <h3 className="text-sm font-semibold first-letter:uppercase">{formatLong(fromDateOnly(selected))}</h3>
             {selectedEntries.length === 0 ? (
               <p className="mt-3 text-[13px] text-fg-subtle">Sem tarefas neste dia. Arraste uma tarefa para cá ou defina a data ao editá-la.</p>
@@ -220,7 +205,6 @@ export function CalendarPage() {
 interface DayCellProps {
   iso: string
   date: Date
-  view: View
   entries: Entry[]
   outside: boolean
   isToday: boolean
@@ -229,16 +213,16 @@ interface DayCellProps {
   onOpen: (id: string) => void
 }
 
-function DayCell({ iso, date, view, entries, outside, isToday, selected, onSelect, onOpen }: DayCellProps) {
+function DayCell({ iso, date, entries, outside, isToday, selected, onSelect, onOpen }: DayCellProps) {
   const { setNodeRef, isOver } = useDroppable({ id: `day:${iso}` })
-  const limit = view === 'month' ? 3 : 50
+  const limit = 3
   const hasOverdue = entries.some((e) => e.kind === 'due' && isOverdue(e.task.dueDate, e.task.status))
   return (
     <div
       ref={setNodeRef}
       className={cn(
         'relative flex flex-col border-line transition-colors',
-        view === 'month' ? 'min-h-16 border-r border-b p-1 sm:min-h-28 sm:p-1.5 [&:nth-child(7n)]:border-r-0' : 'min-h-24 border-b p-2 sm:min-h-[60vh] sm:border-r sm:border-b-0 sm:last:border-r-0',
+        'min-h-14 border-r border-b p-1 sm:min-h-24 sm:p-1.5 [&:nth-child(7n)]:border-r-0',
         outside && 'bg-bg/40',
         selected && 'bg-deep/30',
         isOver && 'bg-deep/50 ring-1 ring-primary ring-inset',
@@ -252,7 +236,6 @@ function DayCell({ iso, date, view, entries, outside, isToday, selected, onSelec
         className="absolute inset-0 z-0"
       />
       <span className="relative z-[1] pointer-events-none mb-1 flex items-center gap-1.5">
-        {view === 'week' && <span className="text-[11px] text-fg-subtle uppercase sm:hidden">{WEEKDAYS[(date.getDay() + 6) % 7]}</span>}
         <span
           className={cn(
             'flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-xs tabular-nums',
@@ -264,14 +247,14 @@ function DayCell({ iso, date, view, entries, outside, isToday, selected, onSelec
         {hasOverdue && <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />}
       </span>
       {/* No celular, a vista mensal mostra apenas pontos; o detalhe fica no painel do dia. */}
-      {view === 'month' && entries.length > 0 && (
+      {entries.length > 0 && (
         <span className="pointer-events-none relative z-[1] flex flex-wrap gap-0.5 px-1 sm:hidden" aria-hidden>
           {entries.slice(0, 4).map((e) => (
             <span key={e.key} className={cn('h-1.5 w-1.5 rounded-full', e.task.status === 'done' ? 'bg-fg-subtle' : 'bg-primary-text')} />
           ))}
         </span>
       )}
-      <div className={cn('relative z-[1] flex flex-col gap-1', view === 'month' && 'max-sm:hidden')}>
+      <div className="relative z-[1] flex flex-col gap-1 max-sm:hidden">
         {entries.slice(0, limit).map((e) => (
           <DraggableChip key={e.key} entry={e} onOpen={() => onOpen(e.task.id)} />
         ))}

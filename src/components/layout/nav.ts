@@ -1,4 +1,4 @@
-import { CalendarDays, ChartColumn, Columns3, FolderKanban, House, Inbox, Settings, type LucideIcon } from 'lucide-react'
+import { CalendarRange, ChartColumn, Columns3, FolderKanban, House, Inbox, Settings, type LucideIcon } from 'lucide-react'
 
 export interface NavItem {
   to: string
@@ -12,10 +12,10 @@ export const NAV: NavItem[] = [
   { to: '/quadro', label: 'Meu quadro', short: 'Quadro', icon: Columns3 },
   { to: '/backlog', label: 'Backlog', short: 'Backlog', icon: Inbox },
   { to: '/projetos', label: 'Projetos', short: 'Projetos', icon: FolderKanban },
-  { to: '/calendario', label: 'Calendário', short: 'Calendário', icon: CalendarDays },
+  { to: '/semana', label: 'Resumo da semana', short: 'Semana', icon: CalendarRange },
   { to: '/estatisticas', label: 'Estatísticas', short: 'Estatísticas', icon: ChartColumn },
   { to: '/configuracoes', label: 'Configurações', short: 'Configurações', icon: Settings },
 ]
 
 /** Destinos principais da barra inferior no celular; os restantes ficam em "Mais". */
-export const MOBILE_PRIMARY = ['/', '/quadro', '/backlog', '/calendario']
+export const MOBILE_PRIMARY = ['/', '/quadro', '/backlog', '/semana']
