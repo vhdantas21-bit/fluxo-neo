@@ -78,6 +78,15 @@ O GitHub desativa automações agendadas em repositórios públicos sem nenhum c
 | **Dicas de toque** | Em celular/tablet, o quadro e o calendário mostram uma vez como arrastar ("toque e segure"). Some ao tocar em “Entendi” ou depois do primeiro arrasto ([`TouchHint`](src/components/ui/TouchHint.tsx)). |
 | **Pesquisa** | Barra no topo (título e descrição) + filtros por estado, prioridade, projeto, categoria, prazo e atrasadas; ordenação por data limite, prioridade e criação. |
 
+### Uso sem internet (com conta)
+
+- **Continua funcionando offline:** cada alteração entra numa fila guardada neste aparelho ([`src/data/offlineRepository.ts`](src/data/offlineRepository.ts)) e é enviada ao Supabase, na ordem, quando a conexão volta (evento `online` + nova tentativa a cada 20 s). Fechar ou recarregar a página não perde nada.
+- **Cópia local dos dados:** atualizada a cada carga e a cada alteração, para o app abrir sem internet. É apagada ao **sair da conta**; se ainda houver alterações não enviadas, o app avisa antes.
+- **Indicador:** no topo aparece **"Offline · N pendentes"**; ao reconectar, "Sincronizando…" e o ✓, com um aviso "Alterações sincronizadas".
+- **Tela "Sem conexão":** só quando não há internet **e** este aparelho nunca carregou os dados. Tenta de novo sozinha quando a conexão volta.
+- **Abrir o app offline:** o service worker ([`public/sw.js`](public/sw.js), só em produção) guarda a página e os arquivos do app. Chamadas ao Supabase nunca passam pelo cache dele.
+- **Erros:** falha de rede mantém a operação na fila; recusa do servidor (validação, permissão) descarta a operação, avisa e recarrega o estado real. Em edições da mesma tarefa em dois aparelhos, a última enviada prevalece.
+
 ### Tela de carregamento (preload)
 
 O preload fica direto no [`index.html`](index.html), em HTML e CSS, então aparece antes de o JavaScript baixar. Mostra o logo se montando, o nome FLUXO NEO e as 5 faixas da marca em onda, e segue o tema claro/escuro guardado. O app o remove com um fade quando a primeira tela real está pronta: os dados carregados (`AppShell`) ou a tela de login (`App.tsx`), via `useHidePreload` em [`src/lib/preload.ts`](src/lib/preload.ts). Fica no mínimo ~1,5 s na tela (entrada na marca, sem piscar) e sai sozinho após 12 s se algo falhar. Com "reduzir movimento" ativado no sistema, fica sem animação.

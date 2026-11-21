@@ -1,6 +1,7 @@
 import { useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Camera, Check, Download, HardDrive, LogOut, Plus, Trash, Upload } from 'lucide-react'
 import { useAuth } from '@/auth/AuthProvider'
+import { useSafeSignOut } from '@/auth/useSafeSignOut'
 import { Avatar, useAvatarPicker, useDisplayName } from '@/components/profile/Avatar'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Form'
@@ -22,7 +23,8 @@ const SHORTCUTS: Array<[string, string]> = [
 ]
 
 export function SettingsPage() {
-  const { mode, user, signOut } = useAuth()
+  const { mode, user } = useAuth()
+  const safeSignOut = useSafeSignOut()
   const { data, updateProfile, createCategory, updateCategory, deleteCategory, repoKind, importData } = useData()
   const importInput = useRef<HTMLInputElement>(null)
   const [importing, setImporting] = useState(false)
@@ -254,7 +256,7 @@ export function SettingsPage() {
                 <p className="text-sm">{user?.email}</p>
                 <p className="text-xs text-fg-subtle">Dados salvos no Supabase e sincronizados entre dispositivos.</p>
               </div>
-              <Button onClick={() => signOut().catch((e) => toast.error(errorMessage(e)))}>
+              <Button onClick={() => void safeSignOut()}>
                 <LogOut size={15} aria-hidden /> Sair
               </Button>
             </div>

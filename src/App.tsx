@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-route
 import { AuthProvider, useAuth } from '@/auth/AuthProvider'
 import { LocalRepository } from '@/data/localRepository'
 import { SupabaseRepository } from '@/data/supabaseRepository'
+import { OfflineRepository } from '@/data/offlineRepository'
 import { supabase } from '@/lib/supabase'
 import { DataProvider } from '@/store/DataProvider'
 import { ToastProvider } from '@/components/ui/Toast'
@@ -124,7 +125,7 @@ function Workspace({ children }: { children: ReactNode }) {
   const { mode, user } = useAuth()
   const userId = user?.id
   const repo = useMemo(
-    () => (mode === 'supabase' && supabase && userId ? new SupabaseRepository(supabase, userId) : new LocalRepository()),
+    () => (mode === 'supabase' && supabase && userId ? new OfflineRepository(new SupabaseRepository(supabase, userId), userId) : new LocalRepository()),
     [mode, userId],
   )
   return (

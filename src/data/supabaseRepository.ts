@@ -1,6 +1,6 @@
 import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js'
 import type { AppData, Category, Priority, Profile, Project, ProjectStatus, Recurrence, Subtask, Task, TaskStatus } from '@/types'
-import type { DataRepository } from './repository'
+import { NetworkError, isNetworkError, type DataRepository } from './repository'
 
 // Linhas tal como existem no PostgreSQL (ver supabase/migrations).
 interface TaskRow {
@@ -49,7 +49,10 @@ interface CategoryRow {
 const PAGE = 1000
 
 function check(error: PostgrestError | null) {
-  if (error) throw new Error(translateError(error))
+  if (!error) return
+  // Falha de rede vira NetworkError: a camada offline guarda a operação e repete depois.
+  if (isNetworkError(new Error(error.message)) || !navigator.onLine) throw new NetworkError()
+  throw new Error(translateError(error))
 }
 
 /** Traduz erros do PostgREST/PostgreSQL em mensagens compreensíveis. */

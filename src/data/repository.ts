@@ -27,3 +27,27 @@ export interface DataRepository {
    */
   subscribe(onRemoteChange: (deletedId?: string) => void): () => void
 }
+
+/** Falha de rede (sem internet ou servidor inalcançável): a operação pode ser repetida depois. */
+export class NetworkError extends Error {
+  constructor(message = 'Sem conexão com o servidor. Verifique sua internet.') {
+    super(message)
+    this.name = 'NetworkError'
+  }
+}
+
+/** Sem conexão e sem cópia local dos dados para mostrar (primeira abertura neste aparelho). */
+export class OfflineError extends Error {
+  constructor() {
+    super('Sem conexão e ainda não há uma cópia dos seus dados neste aparelho.')
+    this.name = 'OfflineError'
+  }
+}
+
+/** Erro causado pela rede (e não por uma recusa do servidor)? */
+export function isNetworkError(e: unknown): boolean {
+  if (e instanceof NetworkError) return true
+  if (e instanceof TypeError) return true // fetch rejeitado pelo navegador
+  const msg = e instanceof Error ? e.message : String(e)
+  return /failed to fetch|networkerror|load failed|network request failed|fetch failed/i.test(msg)
+}

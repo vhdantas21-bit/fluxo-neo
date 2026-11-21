@@ -1,7 +1,8 @@
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Check, Ellipsis, HardDrive, LoaderCircle, LogOut } from 'lucide-react'
+import { Check, CloudOff, Ellipsis, HardDrive, LoaderCircle, LogOut, RefreshCw } from 'lucide-react'
 import { useAuth } from '@/auth/AuthProvider'
+import { useSafeSignOut } from '@/auth/useSafeSignOut'
 import { Avatar, useDisplayName } from '@/components/profile/Avatar'
 import { useData } from '@/store/DataProvider'
 import { useTaskModal } from '@/components/tasks/TaskModalProvider'
@@ -15,7 +16,8 @@ import { prefetchAllPages } from '@/pages/lazyPages'
 import { Modal } from '@/components/ui/Modal'
 import { Spinner } from '@/components/ui/misc'
 import { useToast } from '@/components/ui/Toast'
-import { cn, errorMessage } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import { useSyncState } from '@/lib/syncState'
 import { Logo, LogoMark } from './Logo'
 import { MOBILE_PRIMARY, NAV } from './nav'
 
@@ -24,6 +26,7 @@ const isTyping = (el: EventTarget | null) =>
 
 export function AppShell() {
   const { state, loadError, reload } = useData()
+  const sync = useSyncState()
   // Em erro de carga o preload sai já; no caso normal, sai quando a página montar (HidePreloadOnMount).
   useHidePreload(state === 'error')
   useEffect(() => afterPreload(prefetchAllPages), [])
@@ -65,6 +68,8 @@ export function AppShell() {
             <div className="flex h-[60vh] items-center justify-center">
               <Spinner label="Carregando suas tarefas…" />
             </div>
+          ) : state === 'error' && !sync.online ? (
+            <OfflineScreen onRetry={() => reload().catch(() => undefined)} />
           ) : state === 'error' ? (
             <div className="mx-auto mt-16 max-w-md rounded-2xl border border-line bg-surface p-6 text-center">
               <p className="font-medium">Não foi possível carregar os dados</p>
@@ -178,9 +183,28 @@ const DONE_HIGHLIGHT_MS = 1400
  * gravações (no mínimo ~1 s, para ser perceptível) e depois confirma com o
  * ✓ animado antes de voltar ao estado discreto.
  */
-function SyncStatus({ pending, local }: { pending: number; local: boolean }) {
+function SyncStatus({ pending: writing, local }: { pending: number; local: boolean }) {
   const [phase, setPhase] = useState<SyncPhase>('idle')
   const startedAt = useRef(0)
+  const toast = useToast()
+  const sync = useSyncState()
+  const offline = !local && !sync.online
+  // Fila offline também conta como "sincronizando" quando a conexão volta.
+  const pending = writing + (local || offline ? 0 : sync.queued)
+
+  // Avisos ao perder e ao recuperar a conexão (só no modo com conta).
+  const wasOffline = useRef(false)
+  const hadQueue = useRef(false)
+  useEffect(() => {
+    if (local) return
+    if (offline && !wasOffline.current) {
+      toast.error('Você está offline. Pode continuar usando: as alterações ficam salvas neste aparelho e são enviadas quando a conexão voltar.')
+    }
+    if (!offline && wasOffline.current && !sync.queued && !hadQueue.current) toast.success('Conexão restabelecida.')
+    if (!offline && hadQueue.current && sync.queued === 0) toast.success('Conexão restabelecida. Alterações sincronizadas.')
+    wasOffline.current = offline
+    hadQueue.current = sync.queued > 0
+  }, [offline, sync.queued, local, toast])
 
   useEffect(() => {
     if (pending > 0) {
@@ -199,6 +223,21 @@ function SyncStatus({ pending, local }: { pending: number; local: boolean }) {
       return () => window.clearTimeout(t)
     }
   }, [pending, phase])
+
+  if (offline) {
+    const label = sync.queued ? `Offline · ${sync.queued} ${sync.queued === 1 ? 'pendente' : 'pendentes'}` : 'Offline'
+    return (
+      <span
+        role="status"
+        aria-live="polite"
+        title={sync.queued ? `${label}: serão enviadas quando a conexão voltar` : 'Sem conexão'}
+        className="flex animate-fade-in items-center gap-1.5 rounded-full bg-accent/12 px-2 py-1 text-xs font-medium text-accent-text"
+      >
+        <CloudOff size={14} aria-hidden />
+        <span>{label}</span>
+      </span>
+    )
+  }
 
   const label = phase === 'syncing' ? (local ? 'Salvando…' : 'Sincronizando…') : local ? 'Salvo neste dispositivo' : 'Sincronizado'
   const Icon = phase === 'syncing' ? LoaderCircle : local ? HardDrive : Check
@@ -228,9 +267,9 @@ function SyncStatus({ pending, local }: { pending: number; local: boolean }) {
 }
 
 function Sidebar() {
-  const { mode, user, signOut } = useAuth()
+  const { mode, user } = useAuth()
+  const safeSignOut = useSafeSignOut()
   const { data } = useData()
-  const toast = useToast()
   const name = useDisplayName()
 
   return (
@@ -285,7 +324,7 @@ function Sidebar() {
             </span>
             <button
               type="button"
-              onClick={() => signOut().catch((e) => toast.error(errorMessage(e)))}
+              onClick={() => void safeSignOut()}
               className="rounded-md p-1.5 text-fg-subtle hover:bg-surface-2 hover:text-fg"
               aria-label="Sair"
               title="Sair"
@@ -337,5 +376,33 @@ function MobileNav({ onMore }: { onMore: () => void }) {
         </button>
       </div>
     </nav>
+  )
+}
+
+/** Sem internet e sem cópia dos dados neste aparelho: não há o que mostrar ainda. */
+function OfflineScreen({ onRetry }: { onRetry: () => void }) {
+  // Tenta de novo sozinho quando a conexão voltar.
+  useEffect(() => {
+    window.addEventListener('online', onRetry)
+    return () => window.removeEventListener('online', onRetry)
+  }, [onRetry])
+  return (
+    <div className="mx-auto mt-10 flex max-w-md flex-col items-center px-2 text-center sm:mt-20">
+      <div className="relative">
+        <LogoMark className="h-16 w-16 opacity-90" />
+        <span className="absolute -right-2 -bottom-2 grid h-8 w-8 place-items-center rounded-full bg-accent text-white shadow-card">
+          <CloudOff size={16} aria-hidden />
+        </span>
+      </div>
+      <h1 className="mt-6 text-xl font-semibold">Sem conexão</h1>
+      <p className="mt-2 text-sm text-fg-muted">
+        Para usar o FLUXO NEO sem internet, ele precisa ter carregado suas tarefas neste aparelho pelo menos uma vez. Conecte-se e
+        tente de novo: depois disso, o app funciona mesmo offline.
+      </p>
+      <Button className="mt-6" variant="primary" onClick={onRetry}>
+        <RefreshCw size={15} aria-hidden /> Tentar de novo
+      </Button>
+      <p className="mt-3 text-xs text-fg-subtle">Vamos tentar sozinhos assim que a conexão voltar.</p>
+    </div>
   )
 }
