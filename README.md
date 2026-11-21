@@ -78,7 +78,7 @@ O GitHub desativa automações agendadas em repositórios públicos sem nenhum c
 
 ### Tela de carregamento (preload)
 
-O preload fica direto no [`index.html`](index.html), em HTML e CSS, então aparece antes de o JavaScript baixar. Mostra o logo se montando, o nome FLUXO NEO e as 5 faixas da marca em onda, e segue o tema claro/escuro guardado. O app o remove com um fade quando a primeira tela real está pronta: os dados carregados (`AppShell`) ou a tela de login (`App.tsx`), via `useHidePreload` em [`src/lib/preload.ts`](src/lib/preload.ts). Fica no mínimo ~0,45 s na tela para não piscar e sai sozinho após 12 s se algo falhar. Com "reduzir movimento" ativado no sistema, fica sem animação.
+O preload fica direto no [`index.html`](index.html), em HTML e CSS, então aparece antes de o JavaScript baixar. Mostra o logo se montando, o nome FLUXO NEO e as 5 faixas da marca em onda, e segue o tema claro/escuro guardado. O app o remove com um fade quando a primeira tela real está pronta: os dados carregados (`AppShell`) ou a tela de login (`App.tsx`), via `useHidePreload` em [`src/lib/preload.ts`](src/lib/preload.ts). Fica no mínimo ~1,5 s na tela (entrada na marca, sem piscar) e sai sozinho após 12 s se algo falhar. Com "reduzir movimento" ativado no sistema, fica sem animação.
 
 ### Atalhos
 
@@ -114,9 +114,11 @@ src/
     selectors.ts           Filtros, ordenação e indicadores (funções puras)
     history.ts             Séries para estatísticas
   components/              UI reutilizável (ui/, layout/, tasks/, board/, projects/, charts/)
-  pages/                   Uma página por rota
+  pages/                   Uma página por rota (carregadas sob demanda via pages/lazyPages.ts)
 supabase/migrations/       Esquema SQL + RLS
 ```
+
+**Carregamento:** cada página é um arquivo JS próprio (`React.lazy` em [`src/pages/lazyPages.ts`](src/pages/lazyPages.ts)). A página do endereço de entrada começa a baixar já na abertura, em paralelo com o login e os dados; as outras são antecipadas quando o navegador fica ocioso, para a navegação ser imediata. React, Supabase, dnd-kit e ícones ficam em arquivos separados (`build.rolldownOptions` no [`vite.config.ts`](vite.config.ts)), que mudam pouco e ficam no cache entre deploys; as animações da pesquisa (framer-motion) chegam por `LazyMotion` sem atrasar a abertura.
 
 **Fluxo de dados:** a UI chama ações do `DataProvider` → o estado muda de imediato (otimista) → a gravação entra numa fila ordenada no `DataRepository`. Se falhar, aparece uma notificação e o estado é recarregado do servidor. Alterações vindas de outro dispositivo chegam por Realtime e disparam uma recarga.
 

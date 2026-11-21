@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from 'react'
+import { Suspense, useMemo, type ReactNode } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from '@/auth/AuthProvider'
 import { LocalRepository } from '@/data/localRepository'
@@ -8,20 +8,29 @@ import { DataProvider } from '@/store/DataProvider'
 import { ToastProvider } from '@/components/ui/Toast'
 import { ConfirmProvider } from '@/components/ui/Confirm'
 import { Spinner } from '@/components/ui/misc'
-import { useHidePreload } from '@/lib/preload'
+import { HidePreloadOnMount } from '@/lib/preload'
 import { TaskModalProvider } from '@/components/tasks/TaskModalProvider'
 import { AppShell } from '@/components/layout/AppShell'
-import { DashboardPage } from '@/pages/DashboardPage'
-import { BoardPage } from '@/pages/BoardPage'
-import { BacklogPage } from '@/pages/BacklogPage'
-import { ProjectsPage } from '@/pages/ProjectsPage'
-import { ProjectDetailPage } from '@/pages/ProjectDetailPage'
-import { WeekSummaryPage } from '@/pages/WeekSummaryPage'
-import { StatsPage } from '@/pages/StatsPage'
-import { SettingsPage } from '@/pages/SettingsPage'
-import { SearchPage } from '@/pages/SearchPage'
-import { NotFoundPage } from '@/pages/NotFoundPage'
-import { ForgotPasswordPage, LoginPage, RegisterPage, ResetPasswordPage } from '@/pages/AuthPages'
+import {
+  BacklogPage,
+  BoardPage,
+  DashboardPage,
+  ForgotPasswordPage,
+  LoginPage,
+  NotFoundPage,
+  ProjectDetailPage,
+  ProjectsPage,
+  RegisterPage,
+  ResetPasswordPage,
+  SearchPage,
+  SettingsPage,
+  StatsPage,
+  WeekSummaryPage,
+  prefetchRoute,
+} from '@/pages/lazyPages'
+
+// Baixa a página do endereço de entrada em paralelo com o restante da abertura.
+prefetchRoute(window.location.pathname)
 
 export default function App() {
   return (
@@ -39,8 +48,6 @@ export default function App() {
 
 function AppRoutes() {
   const { mode, loading, session, recovering } = useAuth()
-  // Telas de login/redefinição já estão prontas; o painel avisa sozinho quando os dados chegam (AppShell).
-  useHidePreload(!loading && ((mode === 'supabase' && !session) || recovering))
 
   if (loading)
     return (
@@ -52,20 +59,27 @@ function AppRoutes() {
   // Supabase configurado e sem sessão: só as páginas de autenticação.
   if (mode === 'supabase' && !session)
     return (
-      <Routes>
-        <Route path="/entrar" element={<LoginPage />} />
-        <Route path="/cadastro" element={<RegisterPage />} />
-        <Route path="/recuperar-senha" element={<ForgotPasswordPage />} />
-        <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
-        <Route path="*" element={<RedirectToLogin />} />
-      </Routes>
+      <Suspense fallback={<FullScreenSpinner />}>
+        <Routes>
+          <Route path="/entrar" element={<LoginPage />} />
+          <Route path="/cadastro" element={<RegisterPage />} />
+          <Route path="/recuperar-senha" element={<ForgotPasswordPage />} />
+          <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
+          <Route path="*" element={<RedirectToLogin />} />
+        </Routes>
+        {/* Só monta quando a página de login já carregou: aí o preload pode sair. */}
+        <HidePreloadOnMount />
+      </Suspense>
     )
 
   if (recovering)
     return (
-      <Routes>
-        <Route path="*" element={<ResetPasswordPage />} />
-      </Routes>
+      <Suspense fallback={<FullScreenSpinner />}>
+        <Routes>
+          <Route path="*" element={<ResetPasswordPage />} />
+        </Routes>
+        <HidePreloadOnMount />
+      </Suspense>
     )
 
   return (
@@ -89,6 +103,14 @@ function AppRoutes() {
         </Route>
       </Routes>
     </Workspace>
+  )
+}
+
+function FullScreenSpinner() {
+  return (
+    <div className="flex min-h-dvh items-center justify-center">
+      <Spinner label="Carregando…" />
+    </div>
   )
 }
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Check, Ellipsis, HardDrive, LoaderCircle, LogOut } from 'lucide-react'
 import { useAuth } from '@/auth/AuthProvider'
@@ -10,7 +10,8 @@ import ExpandableSearchBar from '@/components/ui/expandable-search-bar'
 import NovaTarefaButton from '@/components/NovaTarefaButton'
 import { SunMoonThemeToggle } from '@/components/ui/sun-moon-theme-toggle'
 import { THEME_STORAGE_KEY } from '@/lib/theme'
-import { useHidePreload } from '@/lib/preload'
+import { HidePreloadOnMount, afterPreload, useHidePreload } from '@/lib/preload'
+import { prefetchAllPages } from '@/pages/lazyPages'
 import { Modal } from '@/components/ui/Modal'
 import { Spinner } from '@/components/ui/misc'
 import { useToast } from '@/components/ui/Toast'
@@ -23,8 +24,9 @@ const isTyping = (el: EventTarget | null) =>
 
 export function AppShell() {
   const { state, loadError, reload } = useData()
-  // Primeira tela real (dados carregados ou erro): o preload do index.html pode sair.
-  useHidePreload(state !== 'loading')
+  // Em erro de carga o preload sai já; no caso normal, sai quando a página montar (HidePreloadOnMount).
+  useHidePreload(state === 'error')
+  useEffect(() => afterPreload(prefetchAllPages), [])
   const { openNewTask } = useTaskModal()
   const [searchOpen, setSearchOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
@@ -73,7 +75,17 @@ export function AppShell() {
             </div>
           ) : (
             <div key={location.pathname} className="animate-fade-in">
-              <Outlet />
+              <Suspense
+                fallback={
+                  <div className="flex h-[60vh] items-center justify-center">
+                    <Spinner label="Carregando…" />
+                  </div>
+                }
+              >
+                <Outlet />
+                {/* Só monta quando a página (arquivo próprio) e os dados já estão prontos. */}
+                <HidePreloadOnMount />
+              </Suspense>
             </div>
           )}
         </main>

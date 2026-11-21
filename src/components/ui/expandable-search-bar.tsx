@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, LazyMotion, m } from 'framer-motion'
+
+// Os recursos de animação vêm num arquivo à parte, baixado sob demanda (não pesa na abertura do app).
+const loadFeatures = () => import('./motion-features').then((r) => r.default)
 import { Search, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -124,9 +127,10 @@ export default function ExpandableSearchBar(props: ExpandableSearchBarProps) {
         {open ? <X className="size-4" /> : <Search className="size-4" />}
       </button>
 
+      <LazyMotion features={loadFeatures} strict>
       <AnimatePresence>
         {open && (
-          <motion.form
+          <m.form
             key="form"
             role="search"
             onSubmit={handleSubmit}
@@ -163,7 +167,7 @@ export default function ExpandableSearchBar(props: ExpandableSearchBarProps) {
               />
               <AnimatePresence>
                 {open && !value && (
-                  <motion.span
+                  <m.span
                     key="ph"
                     className={cn(
                       'pointer-events-none absolute top-1/2 w-full -translate-y-1/2 truncate text-left text-sm text-fg-subtle select-none',
@@ -175,13 +179,13 @@ export default function ExpandableSearchBar(props: ExpandableSearchBarProps) {
                     transition={{ duration: 0.2 }}
                   >
                     {placeholder}
-                  </motion.span>
+                  </m.span>
                 )}
               </AnimatePresence>
             </div>
             <AnimatePresence initial={false}>
               {open && expandDirection === 'right' && (
-                <motion.button
+                <m.button
                   key="go"
                   type="submit"
                   className="grid h-10 w-10 place-items-center text-fg-subtle hover:text-fg"
@@ -192,12 +196,13 @@ export default function ExpandableSearchBar(props: ExpandableSearchBarProps) {
                   aria-label="Pesquisar"
                 >
                   <Search className="size-4" />
-                </motion.button>
+                </m.button>
               )}
             </AnimatePresence>
-          </motion.form>
+          </m.form>
         )}
       </AnimatePresence>
+      </LazyMotion>
     </div>
   )
 }
