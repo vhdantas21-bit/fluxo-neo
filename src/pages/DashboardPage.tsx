@@ -180,7 +180,7 @@ export function DashboardPage() {
 
           <section className="lg:col-span-3" aria-labelledby="inicio-calendario">
             <h2 id="inicio-calendario" className="mb-3 flex items-center gap-2 text-sm font-semibold">
-              <CalendarDays size={16} className="text-navy-fg" aria-hidden />
+              <CalendarDays size={16} className="text-graphite-fg" aria-hidden />
               Calendário do mês
             </h2>
             <MonthCalendar />

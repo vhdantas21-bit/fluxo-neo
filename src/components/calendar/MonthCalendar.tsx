@@ -140,10 +140,10 @@ export function MonthCalendar() {
         onDragEnd={onDragEnd}
       >
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_280px]">
-          <div className="surface-panel overflow-hidden rounded-2xl border-t-[3px] border-t-navy">
-            <div className="grid grid-cols-7 border-b border-line">
+          <div className="overflow-hidden pt-[3px] rounded-2xl border border-graphite-line bg-graphite-soft [box-shadow:inset_0_3px_0_var(--color-brand-gray),var(--shadow-card)]">
+            <div className="grid grid-cols-7 border-b border-graphite-line bg-brand-gray/25">
               {WEEKDAYS.map((d) => (
-                <div key={d} className="px-2 py-2 text-center text-[11px] font-medium tracking-wide text-fg-subtle uppercase">
+                <div key={d} className="px-2 py-2 text-center text-[11px] font-medium tracking-wide text-graphite-fg uppercase">
                   {d}
                 </div>
               ))}
@@ -168,7 +168,7 @@ export function MonthCalendar() {
             </div>
           </div>
 
-          <aside className="surface-panel rounded-2xl border-t-[3px] border-t-navy p-4" aria-live="polite">
+          <aside className="rounded-2xl border border-graphite-line bg-graphite-soft [box-shadow:inset_0_3px_0_var(--color-brand-gray),var(--shadow-card)] p-4 pt-[19px]" aria-live="polite">
             <h3 className="text-sm font-semibold first-letter:uppercase">{formatLong(fromDateOnly(selected))}</h3>
             {selectedEntries.length === 0 ? (
               <p className="mt-3 text-[13px] text-fg-subtle">Sem tarefas neste dia. Arraste uma tarefa para cá ou defina a data ao editá-la.</p>
@@ -179,7 +179,7 @@ export function MonthCalendar() {
                     <button
                       type="button"
                       onClick={() => openTask(e.task.id)}
-                      className="flex w-full items-start gap-2.5 rounded-lg px-2 py-2 text-left hover:bg-surface-2"
+                      className="flex w-full items-start gap-2.5 rounded-lg px-2 py-2 text-left hover:bg-fg/5"
                     >
                       {e.kind === 'due' ? <Flag size={14} className="mt-0.5 shrink-0 text-fg-subtle" aria-label="Data limite" /> : <Play size={14} className="mt-0.5 shrink-0 text-fg-subtle" aria-label="Início planejado" />}
                       <span className="min-w-0 flex-1">
@@ -221,9 +221,9 @@ function DayCell({ iso, date, entries, outside, isToday, selected, onSelect, onO
     <div
       ref={setNodeRef}
       className={cn(
-        'relative flex flex-col border-line transition-colors',
+        'relative flex flex-col border-graphite-line transition-colors',
         'min-h-14 border-r border-b p-1 sm:min-h-24 sm:p-1.5 [&:nth-child(7n)]:border-r-0',
-        outside && 'bg-bg/40',
+        outside && 'bg-bg/35',
         selected && 'bg-deep/30',
         isOver && 'bg-deep/50 ring-1 ring-primary ring-inset',
       )}

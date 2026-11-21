@@ -82,20 +82,18 @@ export function WeekSummaryPage() {
       </div>
 
       <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Kpi border="border-t-primary" icon={<CircleCheck size={16} />} tone="text-primary-text" label="Concluídas" value={stats.completed.length} note={diffText} />
-        <Kpi border="border-t-navy" icon={<CirclePlus size={16} />} tone="text-navy-fg" label="Criadas" value={stats.created.length} note="tarefas novas na semana" />
+        <Kpi tone="white" icon={<CircleCheck size={16} />} label="Concluídas" value={stats.completed.length} note={diffText} />
+        <Kpi tone="blue" icon={<CirclePlus size={16} />} label="Criadas" value={stats.created.length} note="tarefas novas na semana" />
         <Kpi
-          border="border-t-sky"
+          tone="navy"
           icon={<CalendarClock size={16} />}
-          tone="text-sky-fg"
           label="Prazos na semana"
           value={stats.due.length}
           note={stats.due.length ? `${dueDone} de ${stats.due.length} concluídos` : 'Nenhum prazo nesta semana'}
         />
         <Kpi
-          border={stats.late.length ? 'border-t-accent' : 'border-t-line-strong'}
+          tone="orange"
           icon={<TriangleAlert size={16} />}
-          tone={stats.late.length ? 'text-accent-text' : 'text-fg-muted'}
           label="Atrasadas"
           value={stats.late.length}
           note={stats.late.length ? 'prazo passou sem conclusão' : 'Tudo em dia'}
@@ -190,15 +188,32 @@ export function WeekSummaryPage() {
   )
 }
 
-function Kpi({ border, icon, tone, label, value, note }: { border: string; icon: ReactNode; tone: string; label: string; value: number; note: string }) {
+/**
+ * Cores do logo em cada indicador, com o mesmo sentido do Início:
+ * concluídas = branco/cinza (Feito), criadas = azul (A Fazer), prazos = navy, atrasadas = laranja.
+ */
+const KPI_TONE = {
+  white: { card: '[--brand:var(--color-brand-gray)] [--brand-bar:var(--color-fg)]', label: 'text-fg', orb: '[--orb:#5a5a5a]' },
+  blue: { card: '[--brand:var(--color-brand-blue)]', label: 'text-primary-text', orb: '[--orb:var(--color-brand-blue)]' },
+  navy: { card: '[--brand:var(--color-brand-navy)]', label: 'text-navy-fg', orb: '[--orb:var(--color-brand-navy)]' },
+  orange: { card: '[--brand:var(--color-brand-orange)]', label: 'text-accent-text', orb: '[--orb:var(--color-brand-orange)]' },
+}
+
+function Kpi({ tone, icon, label, value, note }: { tone: keyof typeof KPI_TONE; icon: ReactNode; label: string; value: number; note: string }) {
+  const t = KPI_TONE[tone]
   return (
-    <div className={cn('surface-panel rounded-2xl border-t-[3px] p-5', border)}>
-      <p className={cn('flex items-center gap-2 text-[13px]', tone)}>
+    <div className={cn('surface-brand flex flex-col rounded-2xl p-5', t.card)}>
+      <p className={cn('flex items-center gap-2 text-[13px] font-medium', t.label)}>
         <span aria-hidden>{icon}</span>
         {label}
       </p>
-      <p className="mt-2 text-3xl font-semibold tabular-nums">{value}</p>
-      <p className="mt-1 text-xs text-fg-subtle">{note}</p>
+      <div className="mt-3 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
+        <span className={cn('orb h-12 w-12 shrink-0 text-lg', t.orb)} aria-hidden>
+          {value}
+        </span>
+        <span className="sr-only">{value}</span>
+        <span className="text-xs text-fg-subtle">{note}</span>
+      </div>
     </div>
   )
 }

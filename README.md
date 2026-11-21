@@ -82,15 +82,16 @@ O GitHub desativa automações agendadas em repositórios públicos sem nenhum c
 
 ## Textura visual (superfícies)
 
-Três utilitários em [`src/index.css`](src/index.css) dão profundidade às telas sem sair da paleta; use-os em vez de combinar `border`/`bg-surface`/`shadow` à mão:
+Quatro utilitários em [`src/index.css`](src/index.css) dão profundidade às telas sem sair da paleta; use-os em vez de combinar `border`/`bg-surface`/`shadow` à mão:
 
 | Utilitário | Quando usar | O que faz |
 |---|---|---|
 | `surface-panel` | Cartões, painéis, listas, menus | Vidro translúcido (`--glass-bg`) com desfoque do fundo, borda clara (`--glass-border`) e elevação `--shadow-card` |
 | `surface-raised` | Cartões de tarefa, botões secundários | Degradê de luz sutil (`--raised-top` → `--raised-bottom`) com elevação `--shadow-card` |
+| `surface-brand` | Indicadores com cor própria (ex.: Resumo da semana) | Vidro tingido pela cor de `--brand`, borda no mesmo tom e barra de 3 px no topo (`--brand-bar`). Use as cores do logo: `--color-brand-blue`, `-navy`, `-orange`, `-white`, `-gray` |
 | `orb` | Números em destaque | Esfera com brilho e sombra; a cor vem de `--orb` (ex.: `[--orb:var(--color-accent)]`) |
 
-Elevação: `shadow-card` (repouso) → `shadow-lift` (hover, item ativo) → `shadow-pop` (modais, menus). Todas incluem um brilho de 1 px no topo. O fundo da página tem dois brilhos difusos nas cores da marca (`--ambient-a`/`--ambient-b`). Os tokens mudam no tema claro em `:root[data-theme='light']`.
+Elevação: `shadow-card` (repouso) → `shadow-lift` (hover, item ativo) → `shadow-pop` (modais, menus). Todas incluem um brilho de 1 px no topo. O fundo da página tem dois brilhos difusos nas cores da marca (`--ambient-a`/`--ambient-b`). Os tokens mudam no tema claro em `:root[data-theme='light']`. O calendário do Início usa o cinza da marca (`graphite-soft` / `graphite-line` / `graphite-fg`, com barra `--color-brand-gray`).
 
 ## Arquitetura
 

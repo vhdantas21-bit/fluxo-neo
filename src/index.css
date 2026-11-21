@@ -53,6 +53,17 @@
   --color-navy-line: #26315a;
   --color-navy-fg: #a9b6de;
 
+  /* Cores do logo (faixas da marca) — iguais nos dois temas */
+  --color-brand-blue: #2c50a1;
+  --color-brand-navy: #132967;
+  --color-brand-orange: #c43004;
+  --color-brand-white: #fefefe;
+  --color-brand-gray: #424242;
+  /* Cinza da marca aplicado a superfícies (calendário) */
+  --color-graphite-soft: #2a2a2a;
+  --color-graphite-line: #4a4a4a;
+  --color-graphite-fg: #d4d4d4;
+
   /* Elevação "macia": brilho interno no topo + sombras em camadas */
   --shadow-card: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 24px -14px rgb(0 0 0 / 0.7);
   --shadow-lift: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 2px 4px rgb(0 0 0 / 0.35), 0 18px 36px -16px rgb(0 0 0 / 0.75);
@@ -89,6 +100,8 @@
   --glass-border: rgb(255 255 255 / 0.07);
   --raised-top: #2b2b2b;
   --raised-bottom: #232323;
+  /* Intensidade do tom da marca nos cartões coloridos (surface-brand) */
+  --brand-mix: 30%;
 }
 
 /* Painel de vidro: translúcido, desfoca o fundo ambiente, borda clara e elevação macia */
@@ -98,6 +111,19 @@
   backdrop-filter: blur(16px) saturate(125%);
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-card);
+}
+
+/* Cartão na cor da marca: vidro tingido por --brand (degradê do canto), borda no mesmo tom
+   e barra de 3 px no topo (--brand-bar, padrão = --brand). Ex.: surface-brand [--brand:var(--color-brand-blue)] */
+@utility surface-brand {
+  --brand: var(--color-brand-blue);
+  background:
+    linear-gradient(155deg, color-mix(in srgb, var(--brand) var(--brand-mix), transparent) 0%, transparent 78%),
+    var(--glass-bg);
+  -webkit-backdrop-filter: blur(16px) saturate(125%);
+  backdrop-filter: blur(16px) saturate(125%);
+  border: 1px solid color-mix(in srgb, var(--brand) 45%, var(--glass-border));
+  box-shadow: inset 0 3px 0 var(--brand-bar, var(--brand)), var(--shadow-card);
 }
 
 /* Superfície elevada: leve degradê de luz (topo mais claro) + elevação macia */
@@ -220,6 +246,10 @@
   --color-navy-line: #c9d0e8;
   --color-navy-fg: #1f2f6b;
 
+  --color-graphite-soft: #ededee;
+  --color-graphite-line: #d2d2d5;
+  --color-graphite-fg: #424242;
+
   --shadow-card: inset 0 1px 0 rgb(255 255 255 / 0.9), 0 1px 2px rgb(16 24 40 / 0.06), 0 10px 24px -14px rgb(16 24 40 / 0.18);
   --shadow-lift: inset 0 1px 0 rgb(255 255 255 / 0.95), 0 2px 4px rgb(16 24 40 / 0.06), 0 18px 36px -16px rgb(16 24 40 / 0.24);
   --shadow-pop: inset 0 1px 0 rgb(255 255 255 / 0.95), 0 24px 56px -20px rgb(16 24 40 / 0.28), 0 4px 14px rgb(16 24 40 / 0.08);
@@ -227,6 +257,7 @@
   --ambient-a: color-mix(in srgb, #2c50a1 16%, transparent);
   --ambient-b: color-mix(in srgb, #c43004 10%, transparent);
   --glass-bg: color-mix(in srgb, #ffffff 72%, transparent);
+  --brand-mix: 13%;
   --glass-border: rgb(255 255 255 / 0.85);
   --raised-top: #ffffff;
   --raised-bottom: #f6f6f8;
