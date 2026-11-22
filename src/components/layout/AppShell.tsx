@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils'
 import { useSyncState } from '@/lib/syncState'
 import { Logo, LogoMark } from './Logo'
 import { MOBILE_PRIMARY, NAV } from './nav'
+import { ShortcutsDialog } from '@/components/ShortcutsDialog'
 
 const isTyping = (el: EventTarget | null) =>
   el instanceof HTMLElement && (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName))
@@ -33,6 +34,7 @@ export function AppShell() {
   const { openNewTask } = useTaskModal()
   const [searchOpen, setSearchOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const location = useLocation()
 
   // Atalhos de teclado globais.
@@ -43,6 +45,9 @@ export function AppShell() {
       if ((mod && e.key.toLowerCase() === 'k') || (!mod && e.key === '/' && !isTyping(e.target))) {
         e.preventDefault()
         setSearchOpen(true)
+      } else if (!mod && !e.altKey && e.key === '?' && !isTyping(e.target)) {
+        e.preventDefault()
+        setShortcutsOpen(true)
       } else if (!mod && !e.altKey && e.key.toLowerCase() === 'n' && !isTyping(e.target)) {
         e.preventDefault()
         openNewTask(location.pathname === '/backlog' ? { status: 'backlog' } : undefined)
@@ -96,6 +101,7 @@ export function AppShell() {
         </main>
       </div>
       <MobileNav onMore={() => setMoreOpen(true)} />
+      <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       <Modal open={moreOpen} onClose={() => setMoreOpen(false)} title="Mais" size="sm">
         <nav aria-label="Mais seções" className="-mx-2 flex flex-col">
           {NAV.filter((n) => !MOBILE_PRIMARY.includes(n.to)).map(({ to, label, icon: Icon }) => (

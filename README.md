@@ -84,6 +84,7 @@ O GitHub desativa automações agendadas em repositórios públicos sem nenhum c
 - **Cópia local dos dados:** atualizada a cada carga e a cada alteração, para o app abrir sem internet. É apagada ao **sair da conta**; se ainda houver alterações não enviadas, o app avisa antes.
 - **Indicador:** no topo aparece **"Offline · N pendentes"**; ao reconectar, "Sincronizando…" e o ✓, com um aviso "Alterações sincronizadas".
 - **Tela "Sem conexão":** só quando não há internet **e** este aparelho nunca carregou os dados. Tenta de novo sozinha quando a conexão volta.
+- **Instalar na tela inicial:** o [`manifest.webmanifest`](public/manifest.webmanifest) e os ícones PNG do logo (`apple-touch-icon.png` 180 px para iPhone/iPad, `icon-192/512.png` e `icon-maskable-512.png` para Android) deixam o app instalável com o ícone certo.
 - **Abrir o app offline:** o service worker ([`public/sw.js`](public/sw.js), só em produção) guarda a página e os arquivos do app. Chamadas ao Supabase nunca passam pelo cache dele.
 - **Erros:** falha de rede mantém a operação na fila; recusa do servidor (validação, permissão) descarta a operação, avisa e recarrega o estado real. Em edições da mesma tarefa em dois aparelhos, a última enviada prevalece.
 
@@ -93,7 +94,7 @@ O preload fica direto no [`index.html`](index.html), em HTML e CSS, então apare
 
 ### Atalhos
 
-`N` nova tarefa · `/` ou `Ctrl/⌘ + K` pesquisar · `Ctrl/⌘ + Enter` salvar · `Esc` fechar · num cartão: `Espaço` pegar/soltar, setas mover, `Enter` abrir.
+`?` mostra a lista de atalhos em qualquer tela · `N` nova tarefa · `/` ou `Ctrl/⌘ + K` pesquisar · `Ctrl/⌘ + Enter` salvar · `Esc` fechar · num cartão: `Espaço` pegar/soltar, setas mover, `Enter` abrir.
 
 ## Textura visual (superfícies)
 

@@ -12,15 +12,8 @@ import { useData } from '@/store/DataProvider'
 import { PALETTE_SWATCHES } from '@/types'
 import { errorMessage, pluralize } from '@/lib/utils'
 import { ImportError, planImport } from '@/lib/importData'
+import { Keys, ShortcutList } from '@/components/ShortcutsDialog'
 
-const SHORTCUTS: Array<[string, string]> = [
-  ['N', 'Nova tarefa'],
-  ['/  ou  Ctrl + K', 'Pesquisar'],
-  ['Ctrl + Enter', 'Salvar tarefa aberta'],
-  ['Esc', 'Fechar janela'],
-  ['Espaço (num cartão)', 'Pegar / soltar ao mover com o teclado'],
-  ['Setas', 'Mover cartão entre posições e colunas'],
-]
 
 export function SettingsPage() {
   const { mode, user } = useAuth()
@@ -298,17 +291,13 @@ export function SettingsPage() {
         </Card>
 
         <Card>
-          <h2 className="mb-3 text-sm font-semibold">Atalhos de teclado</h2>
-          <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
-            {SHORTCUTS.map(([k, v]) => (
-              <div key={k} className="flex items-center justify-between gap-3 text-[13px]">
-                <dt className="text-fg-muted">{v}</dt>
-                <dd>
-                  <kbd className="rounded border border-line-strong bg-surface-2 px-1.5 py-0.5 text-xs text-fg">{k}</kbd>
-                </dd>
-              </div>
-            ))}
-          </dl>
+          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-sm font-semibold">Atalhos de teclado</h2>
+            <p className="flex items-center gap-1.5 text-xs text-fg-subtle">
+              Pressione <Keys keys={[['?']]} /> em qualquer tela para ver esta lista
+            </p>
+          </div>
+          <ShortcutList columns />
         </Card>
       </div>
     </div>

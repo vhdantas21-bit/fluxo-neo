@@ -7,7 +7,7 @@
  * - Nada de outros domínios é interceptado: as chamadas ao Supabase vão sempre
  *   direto à rede (os dados offline ficam na camada de dados do app).
  */
-const SHELL = 'fluxo-shell-v1'
+const SHELL = 'fluxo-shell-v2'
 const ASSETS = 'fluxo-assets-v1'
 const MAX_ASSETS = 120
 
@@ -15,7 +15,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(SHELL)
-      .then((c) => c.addAll(['/', '/logo.svg', '/manifest.webmanifest']))
+      .then((c) => c.addAll(['/', '/logo.svg', '/manifest.webmanifest', '/apple-touch-icon.png', '/icon-192.png']))
       .then(() => self.skipWaiting()),
   )
 })
@@ -79,7 +79,7 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  if (url.pathname === '/logo.svg' || url.pathname === '/manifest.webmanifest') {
+  if (['/logo.svg', '/manifest.webmanifest', '/apple-touch-icon.png', '/icon-192.png', '/icon-512.png', '/icon-maskable-512.png'].includes(url.pathname)) {
     event.respondWith(caches.match(req).then((hit) => hit || fetch(req)))
   }
 })
