@@ -41,9 +41,12 @@ const title = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().sli
 const oneOf = <T extends string>(v: unknown, list: T[], fallback: T): T => (list.includes(v as T) ? (v as T) : fallback)
 const color = (v: unknown, fallback: string) => (typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v) ? v : fallback)
 
+/** Data `YYYY-MM-DD` que existe de verdade: 30/02 ou 31/04 não passam (o navegador as "corrigiria" sem avisar). */
 function dateOnly(v: unknown): string | null {
   if (typeof v !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return null
-  return Number.isNaN(new Date(`${v}T00:00:00`).getTime()) ? null : v
+  const [y, m, d] = v.split('-').map(Number)
+  const dt = new Date(Date.UTC(y, m - 1, d))
+  return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d && y >= 1900 && y <= 2200 ? v : null
 }
 function timestamp(v: unknown, fallback: string): string {
   if (typeof v !== 'string') return fallback

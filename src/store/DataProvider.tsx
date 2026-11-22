@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import type { DataRepository } from '@/data/repository'
+import { isNetworkError, type DataRepository } from '@/data/repository'
 import type { AppData, Category, Profile, Project, Subtask, Task, TaskStatus } from '@/types'
 import { errorMessage, nowISO, uid } from '@/lib/utils'
 import { nextOccurrence } from '@/lib/recurrence'
@@ -69,10 +69,42 @@ function spawnRecurring(changed: Task[], before: Map<string, Task>, all: Task[],
   const out = changed.map((t) => {
     const prev = before.get(t.id)
     if (!t.recurrence || t.status !== 'done' || !prev || prev.status === 'done') return t
-    spawned.push(nextOccurrence(t, t.recurrence, now, (top -= 1024)))
+    // A nova ocorrência nasce no mesmo instante da conclusão: é o elo usado por revertRecurring.
+    spawned.push(nextOccurrence(t, t.recurrence, t.completedAt ?? now, (top -= 1024)))
     return { ...t, recurrence: null }
   })
   return { tasks: [...out, ...spawned], spawned }
+}
+
+/**
+ * Recorrente concluída por engano: quando uma tarefa sai de "done", a
+ * ocorrência criada na conclusão (mesmo título, criada no instante da
+ * conclusão, ainda em "A Fazer" e sem subtarefas feitas) é removida e a regra
+ * volta para a original. Se a ocorrência já foi mexida, fica como está.
+ */
+function revertRecurring(changed: Task[], before: Map<string, Task>, all: Task[]) {
+  const removed: Task[] = []
+  const changedIds = new Set(changed.map((t) => t.id))
+  const tasks = changed.map((t) => {
+    const prev = before.get(t.id)
+    if (!prev || prev.status !== 'done' || t.status === 'done' || t.recurrence || !prev.completedAt) return t
+    const at = new Date(prev.completedAt).getTime()
+    const child = all.find(
+      (x) =>
+        !changedIds.has(x.id) &&
+        !removed.includes(x) &&
+        x.recurrence &&
+        x.status === 'todo' &&
+        !x.archivedAt &&
+        x.title === t.title &&
+        new Date(x.createdAt).getTime() === at &&
+        x.subtasks.every((st) => !st.done),
+    )
+    if (!child) return t
+    removed.push(child)
+    return { ...t, recurrence: child.recurrence }
+  })
+  return { tasks, removed }
 }
 
 /** Posição para colocar no topo de uma coluna. */
@@ -185,20 +217,43 @@ export function DataProvider({ repo, children }: { repo: DataRepository; childre
   )
 
   /** Grava mudanças de estado aplicando a recorrência e avisando. */
+  const saveWithRecurrenceRef = useRef<(changed: Task[]) => void>(() => undefined)
   const saveWithRecurrence = useCallback(
     (changed: Task[]) => {
       const d = dataRef.current
       const before = new Map(d.tasks.map((t) => [t.id, t]))
-      const { tasks, spawned } = spawnRecurring(changed, before, d.tasks, nowISO())
+      // Saiu de "Feito"? Desfaz a ocorrência gerada (concluída por engano).
+      const reverted = revertRecurring(changed, before, d.tasks)
+      if (reverted.removed.length) {
+        const gone = new Set(reverted.removed.map((t) => t.id))
+        commit({ ...dataRef.current, tasks: dataRef.current.tasks.filter((t) => !gone.has(t.id)) })
+        persist(() => repo.deleteTasks([...gone]))
+      }
+      const { tasks, spawned } = spawnRecurring(reverted.tasks, before, d.tasks, nowISO())
       saveTasks(tasks)
       for (const t of spawned) {
+        const original = tasks.find((x) => x.status === 'done' && x.completedAt === t.createdAt && x.title === t.title)
+        const prev = original && before.get(original.id)
         toast.success(
           t.dueDate ? `Próxima ocorrência criada em A Fazer para ${formatRelative(t.dueDate)}.` : 'Próxima ocorrência criada em A Fazer.',
+          prev
+            ? {
+                label: 'Desfazer',
+                // Devolve a tarefa ao estado e posição anteriores; revertRecurring remove a ocorrência.
+                onClick: () => {
+                  const cur = dataRef.current.tasks.find((x) => x.id === prev.id)
+                  if (cur?.status === 'done') saveWithRecurrenceRef.current([{ ...cur, status: prev.status, position: prev.position, completedAt: null }])
+                },
+              }
+            : undefined,
         )
       }
     },
-    [saveTasks, toast],
+    [saveTasks, toast, commit, persist, repo],
   )
+  useEffect(() => {
+    saveWithRecurrenceRef.current = saveWithRecurrence
+  }, [saveWithRecurrence])
 
   const createTask = useCallback(
     (draft: TaskDraft): Task => {
@@ -476,13 +531,38 @@ export function DataProvider({ repo, children }: { repo: DataRepository; childre
         tasks: [...d.tasks, ...tasks],
       })
       // Projetos e categorias primeiro (as tarefas apontam para eles); tarefas em lotes.
+      // Se o servidor recusar um lote, reenvia tarefa por tarefa: só as recusadas ficam de fora.
       persist(async () => {
         for (const p of plan.projects) await repo.saveProject(p)
         for (const c of plan.categories) await repo.saveCategory(c)
-        for (let i = 0; i < tasks.length; i += 200) await repo.saveTasks(tasks.slice(i, i + 200))
+        const refused: Task[] = []
+        for (let i = 0; i < tasks.length; i += 200) {
+          const batch = tasks.slice(i, i + 200)
+          try {
+            await repo.saveTasks(batch)
+          } catch (e) {
+            if (isNetworkError(e)) throw e
+            for (const t of batch) {
+              try {
+                await repo.saveTasks([t])
+              } catch (err) {
+                if (isNetworkError(err)) throw err
+                refused.push(t)
+              }
+            }
+          }
+        }
+        if (refused.length) {
+          const ids = new Set(refused.map((t) => t.id))
+          commit({ ...dataRef.current, tasks: dataRef.current.tasks.filter((t) => !ids.has(t.id)) })
+          const names = refused.slice(0, 3).map((t) => `“${t.title}”`).join(', ')
+          toast.error(
+            `${refused.length === 1 ? '1 tarefa foi recusada' : `${refused.length} tarefas foram recusadas`} pelo servidor e não foi importada: ${names}${refused.length > 3 ? '…' : ''}`,
+          )
+        }
       })
     },
-    [commit, persist, repo],
+    [commit, persist, repo, toast],
   )
 
   const updateProfile = useCallback(
