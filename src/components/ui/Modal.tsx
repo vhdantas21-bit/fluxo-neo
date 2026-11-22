@@ -10,6 +10,8 @@ interface ModalProps {
   children: ReactNode
   footer?: ReactNode
   size?: 'sm' | 'md' | 'lg'
+  /** Faixa com as cores do logo no topo (janelas principais, como a da tarefa). */
+  accent?: boolean
 }
 
 const widths = { sm: 'sm:max-w-md', md: 'sm:max-w-xl', lg: 'sm:max-w-2xl' }
@@ -18,7 +20,7 @@ const widths = { sm: 'sm:max-w-md', md: 'sm:max-w-xl', lg: 'sm:max-w-2xl' }
  * Modal acessível baseado em <dialog> nativo: foco preso no diálogo,
  * fecho com Esc e devolução do foco ao elemento que o abriu.
  */
-export function Modal({ open, onClose, title, description, children, footer, size = 'md' }: ModalProps) {
+export function Modal({ open, onClose, title, description, children, footer, size = 'md', accent }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null)
   const titleId = useId()
   // Só fecha se o clique começou E terminou no fundo (evita fechar ao selecionar texto).
@@ -70,6 +72,12 @@ export function Modal({ open, onClose, title, description, children, footer, siz
     >
       {open && (
         <div className="flex max-h-[inherit] flex-col">
+          {accent && (
+            <div
+              aria-hidden
+              className="h-1 shrink-0 rounded-t-[inherit] bg-[linear-gradient(90deg,#2c50a1_0_22%,#132967_22%_44%,#c43004_44%_66%,var(--color-brand-white)_66%_82%,#424242_82%_100%)]"
+            />
+          )}
           <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-4 sm:px-6">
             <div>
               <h2 id={titleId} className="text-base font-semibold tracking-tight">

@@ -40,7 +40,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSel
 })
 
 interface FieldProps {
-  label: string
+  label: ReactNode
   htmlFor: string
   error?: string
   hint?: string

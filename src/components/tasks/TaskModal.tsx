@@ -1,13 +1,15 @@
-import { useMemo, useRef, useState, type FormEvent } from 'react'
-import { Archive, ArchiveRestore, Copy, Ellipsis, Plus, Trash, X } from 'lucide-react'
+import { useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { Archive, ArchiveRestore, CalendarClock, Copy, Ellipsis, Flag, FolderKanban, ListChecks, Play, Plus, Repeat, StickyNote, Tag, Trash, X } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Select, Textarea } from '@/components/ui/Form'
 import { Menu } from '@/components/ui/Menu'
+import { ProgressBar } from '@/components/ui/misc'
+import { ColorDot } from '@/components/tasks/TaskBits'
 import { useConfirm } from '@/components/ui/Confirm'
 import { useToast } from '@/components/ui/Toast'
 import { useData, type TaskDraft } from '@/store/DataProvider'
-import { ALL_STATUSES, PALETTE_SWATCHES, PRIORITY_LABEL, STATUS_LABEL, type Priority, type RecurrenceFreq, type Subtask } from '@/types'
+import { PALETTE_SWATCHES, PRIORITY_LABEL, STATUS_LABEL, type Priority, type RecurrenceFreq, type Subtask, type TaskStatus } from '@/types'
 import { RECURRENCE_LABEL, describeRecurrence } from '@/lib/recurrence'
 import { cn, uid } from '@/lib/utils'
 
@@ -140,6 +142,8 @@ export function TaskModal({ open, taskId, defaults, onClose }: Props) {
   }
 
   const doneSubs = draft.subtasks.filter((s) => s.done).length
+  const selectedProject = data.projects.find((p) => p.id === draft.projectId)
+  const selectedCategory = data.categories.find((c) => c.id === draft.categoryId)
 
   return (
     <Modal
@@ -148,6 +152,7 @@ export function TaskModal({ open, taskId, defaults, onClose }: Props) {
       title={existing ? 'Editar tarefa' : 'Nova tarefa'}
       description={existing?.archivedAt ? 'Esta tarefa está arquivada.' : undefined}
       size="lg"
+      accent
       footer={
         <>
           {existing && (
@@ -237,182 +242,207 @@ export function TaskModal({ open, taskId, defaults, onClose }: Props) {
           />
         </Field>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Estado" htmlFor="task-status">
-            <Select id="task-status" value={draft.status} onChange={(e) => set('status', e.target.value as TaskDraft['status'])}>
-              {ALL_STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {STATUS_LABEL[s]}
-                </option>
-              ))}
-            </Select>
-          </Field>
+        {/* Planejamento: estado, prioridade, repetição e datas (tom azul da marca) */}
+        <section aria-labelledby="task-plan" className="flex flex-col gap-4 rounded-xl border border-sky-line/70 bg-sky-soft/60 p-3 sm:p-4">
+          <h3 id="task-plan" className="flex items-center gap-2 text-xs font-semibold tracking-wide text-sky-fg uppercase">
+            <CalendarClock size={14} aria-hidden /> Planejamento
+          </h3>
+          <div className="grid gap-4 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+            <Segmented legend="Estado" name="status" value={draft.status} onChange={(v) => set('status', v)} options={STATUS_OPTIONS} />
+            <Segmented legend="Prioridade" name="priority" value={draft.priority} onChange={(v) => set('priority', v)} options={PRIORITY_OPTIONS} />
+          </div>
 
-          <fieldset className="flex flex-col gap-1.5">
-            <legend className="mb-1.5 text-[13px] font-medium text-fg-muted">Prioridade</legend>
-            <div className="grid h-10 grid-cols-3 gap-1 rounded-lg border border-line-strong bg-surface-2 p-1">
-              {(['low', 'medium', 'high'] as Priority[]).map((p) => (
-                <label
-                  key={p}
-                  className={cn(
-                    'relative flex cursor-pointer items-center justify-center rounded-md text-[13px] font-medium transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-primary-text',
-                    draft.priority === p
-                      ? p === 'high'
-                        ? 'bg-accent text-white'
-                        : 'bg-deep text-fg'
-                      : 'text-fg-subtle hover:text-fg',
-                  )}
-                >
-                  <input
-                    type="radio"
-                    name="priority"
-                    value={p}
-                    checked={draft.priority === p}
-                    onChange={() => set('priority', p)}
-                    className="sr-only"
+          <Field
+            label={
+              <span className="inline-flex items-center gap-1.5">
+                <Repeat size={13} className={draft.recurrence ? 'text-primary-text' : 'text-fg-subtle'} aria-hidden />
+                Repetir
+              </span>
+            }
+            htmlFor="task-recurrence"
+            hint={
+              draft.recurrence
+                ? `${describeRecurrence(draft.recurrence)}. Ao concluir, a próxima ocorrência é criada em A Fazer${draft.dueDate ? ', com a data limite avançada' : ''}.`
+                : 'Para rotinas: contas do mês, treino, publicações…'
+            }
+          >
+            <div className="flex gap-2">
+              <Select
+                id="task-recurrence"
+                value={draft.recurrence?.freq ?? ''}
+                onChange={(e) =>
+                  set('recurrence', e.target.value ? { freq: e.target.value as RecurrenceFreq, interval: draft.recurrence?.interval ?? 1 } : null)
+                }
+                className="flex-1"
+              >
+                <option value="">Não repete</option>
+                {(Object.keys(RECURRENCE_LABEL) as RecurrenceFreq[]).map((f) => (
+                  <option key={f} value={f}>
+                    {RECURRENCE_LABEL[f]}
+                  </option>
+                ))}
+              </Select>
+              {draft.recurrence && (
+                <label className="flex items-center gap-2 text-[13px] text-fg-muted">
+                  <span className="whitespace-nowrap">a cada</span>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={365}
+                    inputMode="numeric"
+                    aria-label="Intervalo da repetição"
+                    value={draft.recurrence.interval}
+                    onChange={(e) =>
+                      set('recurrence', { ...draft.recurrence!, interval: Math.min(365, Math.max(1, Number(e.target.value) || 1)) })
+                    }
+                    className="w-20"
                   />
-                  {PRIORITY_LABEL[p]}
                 </label>
-              ))}
+              )}
             </div>
-          </fieldset>
-
-          <Field label="Data de início" htmlFor="task-start" hint="Quando você planeja executar">
-            <Input id="task-start" type="date" value={draft.startDate ?? ''} onChange={(e) => set('startDate', e.target.value || null)} />
           </Field>
 
-          <Field label="Data limite" htmlFor="task-due" error={errors.dueDate}>
-            <Input
-              id="task-due"
-              type="date"
-              value={draft.dueDate ?? ''}
-              min={draft.startDate ?? undefined}
-              onChange={(e) => set('dueDate', e.target.value || null)}
-              aria-invalid={!!errors.dueDate}
-            />
-          </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label={
+                <span className="inline-flex items-center gap-1.5">
+                  <Play size={13} className="text-sky-fg" aria-hidden /> Data de início
+                </span>
+              }
+              htmlFor="task-start"
+              hint="Quando você planeja executar"
+            >
+              <Input id="task-start" type="date" value={draft.startDate ?? ''} onChange={(e) => set('startDate', e.target.value || null)} />
+            </Field>
 
-          <Field label="Projeto" htmlFor="task-project">
-            <Select id="task-project" value={draft.projectId ?? ''} onChange={(e) => set('projectId', e.target.value || null)}>
-              <option value="">Sem projeto</option>
-              {data.projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
+            <Field
+              label={
+                <span className="inline-flex items-center gap-1.5">
+                  <Flag size={13} className="text-accent-text" aria-hidden /> Data limite
+                </span>
+              }
+              htmlFor="task-due"
+              error={errors.dueDate}
+            >
+              <Input
+                id="task-due"
+                type="date"
+                value={draft.dueDate ?? ''}
+                min={draft.startDate ?? undefined}
+                onChange={(e) => set('dueDate', e.target.value || null)}
+                aria-invalid={!!errors.dueDate}
+              />
+            </Field>
+          </div>
+        </section>
 
-          <Field label="Categoria" htmlFor="task-category">
-            {newCategory === null ? (
-              <div className="flex gap-2">
-                <Select
-                  id="task-category"
-                  value={draft.categoryId ?? ''}
-                  onChange={(e) => set('categoryId', e.target.value || null)}
-                >
-                  <option value="">Sem categoria</option>
-                  {data.categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </Select>
-                <Button size="icon" variant="secondary" aria-label="Nova categoria" title="Nova categoria" onClick={() => setNewCategory('')}>
-                  <Plus size={16} />
-                </Button>
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <Input
-                  id="task-category"
-                  autoFocus
-                  value={newCategory}
-                  maxLength={40}
-                  placeholder="Nome da categoria"
-                  onChange={(e) => setNewCategory(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
+        {/* Organização: projeto e categoria */}
+        <section aria-labelledby="task-org" className="flex flex-col gap-4 rounded-xl border border-navy-line/70 bg-navy-soft/60 p-3 sm:p-4">
+          <h3 id="task-org" className="flex items-center gap-2 text-xs font-semibold tracking-wide text-navy-fg uppercase">
+            <FolderKanban size={14} aria-hidden /> Organização
+          </h3>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label={
+                <span className="inline-flex items-center gap-1.5">
+                  {selectedProject ? <ColorDot color={selectedProject.color} /> : <FolderKanban size={13} className="text-fg-subtle" aria-hidden />}
+                  Projeto
+                </span>
+              }
+              htmlFor="task-project"
+            >
+              <Select id="task-project" value={draft.projectId ?? ''} onChange={(e) => set('projectId', e.target.value || null)}>
+                <option value="">Sem projeto</option>
+                {data.projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+
+            <Field
+              label={
+                <span className="inline-flex items-center gap-1.5">
+                  <Tag size={13} style={{ color: selectedCategory?.color }} className={selectedCategory ? undefined : 'text-fg-subtle'} aria-hidden />
+                  Categoria
+                </span>
+              }
+              htmlFor="task-category"
+            >
+              {newCategory === null ? (
+                <div className="flex gap-2">
+                  <Select
+                    id="task-category"
+                    value={draft.categoryId ?? ''}
+                    onChange={(e) => set('categoryId', e.target.value || null)}
+                  >
+                    <option value="">Sem categoria</option>
+                    {data.categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </Select>
+                  <Button size="icon" variant="secondary" aria-label="Nova categoria" title="Nova categoria" onClick={() => setNewCategory('')}>
+                    <Plus size={16} />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Input
+                    id="task-category"
+                    autoFocus
+                    value={newCategory}
+                    maxLength={40}
+                    placeholder="Nome da categoria"
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        const c = createCategory(newCategory, PALETTE_SWATCHES[data.categories.length % PALETTE_SWATCHES.length].value)
+                        if (c) set('categoryId', c.id)
+                        setNewCategory(null)
+                      } else if (e.key === 'Escape') {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setNewCategory(null)
+                      }
+                    }}
+                  />
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
                       const c = createCategory(newCategory, PALETTE_SWATCHES[data.categories.length % PALETTE_SWATCHES.length].value)
                       if (c) set('categoryId', c.id)
                       setNewCategory(null)
-                    } else if (e.key === 'Escape') {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      setNewCategory(null)
-                    }
-                  }}
-                />
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    const c = createCategory(newCategory, PALETTE_SWATCHES[data.categories.length % PALETTE_SWATCHES.length].value)
-                    if (c) set('categoryId', c.id)
-                    setNewCategory(null)
-                  }}
-                >
-                  Adicionar
-                </Button>
-              </div>
-            )}
-          </Field>
-        </div>
+                    }}
+                  >
+                    Adicionar
+                  </Button>
+                </div>
+              )}
+            </Field>
 
-        <Field
-          label="Repetir"
-          htmlFor="task-recurrence"
-          hint={
-            draft.recurrence
-              ? `${describeRecurrence(draft.recurrence)}. Ao concluir, a próxima ocorrência é criada em A Fazer${draft.dueDate ? ', com a data limite avançada' : ''}.`
-              : 'Para rotinas: contas do mês, treino, publicações…'
-          }
-        >
-          <div className="flex gap-2">
-            <Select
-              id="task-recurrence"
-              value={draft.recurrence?.freq ?? ''}
-              onChange={(e) =>
-                set('recurrence', e.target.value ? { freq: e.target.value as RecurrenceFreq, interval: draft.recurrence?.interval ?? 1 } : null)
-              }
-              className="flex-1"
-            >
-              <option value="">Não repete</option>
-              {(Object.keys(RECURRENCE_LABEL) as RecurrenceFreq[]).map((f) => (
-                <option key={f} value={f}>
-                  {RECURRENCE_LABEL[f]}
-                </option>
-              ))}
-            </Select>
-            {draft.recurrence && (
-              <label className="flex items-center gap-2 text-[13px] text-fg-muted">
-                <span className="whitespace-nowrap">a cada</span>
-                <Input
-                  type="number"
-                  min={1}
-                  max={365}
-                  inputMode="numeric"
-                  aria-label="Intervalo da repetição"
-                  value={draft.recurrence.interval}
-                  onChange={(e) =>
-                    set('recurrence', { ...draft.recurrence!, interval: Math.min(365, Math.max(1, Number(e.target.value) || 1)) })
-                  }
-                  className="w-20"
-                />
-              </label>
-            )}
           </div>
-        </Field>
+        </section>
 
         <fieldset>
           <legend className="mb-2 flex w-full items-center justify-between text-[13px] font-medium text-fg-muted">
-            Subtarefas
+            <span className="inline-flex items-center gap-1.5">
+              <ListChecks size={14} className="text-primary-text" aria-hidden /> Subtarefas
+            </span>
             {draft.subtasks.length > 0 && (
               <span className="text-xs font-normal text-fg-subtle">
                 {doneSubs}/{draft.subtasks.length} concluídas
               </span>
             )}
           </legend>
+          {draft.subtasks.length > 0 && (
+            <div className="mb-2">
+              <ProgressBar value={(doneSubs / draft.subtasks.length) * 100} label="Subtarefas concluídas" />
+            </div>
+          )}
           <ul className="flex flex-col gap-1">
             {draft.subtasks.map((s) => (
               <li key={s.id} className="group flex items-center gap-2 rounded-lg px-1 hover:bg-surface-2">
@@ -462,7 +492,15 @@ export function TaskModal({ open, taskId, defaults, onClose }: Props) {
           </div>
         </fieldset>
 
-        <Field label="Notas" htmlFor="task-notes" error={errors.notes}>
+        <Field
+          label={
+            <span className="inline-flex items-center gap-1.5">
+              <StickyNote size={13} className="text-ember-fg" aria-hidden /> Notas
+            </span>
+          }
+          htmlFor="task-notes"
+          error={errors.notes}
+        >
           <Textarea
             id="task-notes"
             value={draft.notes}
@@ -486,5 +524,74 @@ export function TaskModal({ open, taskId, defaults, onClose }: Props) {
         </p>
       </form>
     </Modal>
+  )
+}
+
+interface SegmentOption<T extends string> {
+  value: T
+  label: string
+  /** Cor do ponto quando a opção não está selecionada. */
+  dot: string
+  /** Fundo e texto quando selecionada. */
+  on: string
+  /** Cor do ponto quando selecionada (padrão: branco). */
+  onDot?: string
+}
+
+/** Cores do logo: cinza (baixa), azul (média) e laranja (alta), as mesmas da borda dos cartões. */
+const PRIORITY_OPTIONS: SegmentOption<Priority>[] = [
+  { value: 'low', label: PRIORITY_LABEL.low, dot: 'bg-graphite', on: 'bg-graphite text-white' },
+  { value: 'medium', label: PRIORITY_LABEL.medium, dot: 'bg-primary', on: 'bg-primary text-white' },
+  { value: 'high', label: PRIORITY_LABEL.high, dot: 'bg-accent', on: 'bg-accent text-white' },
+]
+
+/** Mesmas cores das colunas do quadro: Backlog cinza, A Fazer azul, Fazendo laranja, Feito branco. */
+const STATUS_OPTIONS: SegmentOption<TaskStatus>[] = [
+  { value: 'backlog', label: STATUS_LABEL.backlog, dot: 'bg-graphite', on: 'bg-graphite text-white' },
+  { value: 'todo', label: STATUS_LABEL.todo, dot: 'bg-primary', on: 'bg-primary text-white' },
+  { value: 'doing', label: STATUS_LABEL.doing, dot: 'bg-accent', on: 'bg-accent text-white' },
+  { value: 'done', label: STATUS_LABEL.done, dot: 'bg-fg', on: 'bg-fg text-bg', onDot: 'bg-bg' },
+]
+
+/** Seletor em botões (rádios acessíveis) com a cor de cada opção sempre visível. */
+function Segmented<T extends string>({
+  legend,
+  name,
+  value,
+  options,
+  onChange,
+}: {
+  legend: ReactNode
+  name: string
+  value: T
+  options: SegmentOption<T>[]
+  onChange: (v: T) => void
+}) {
+  return (
+    <fieldset className="flex min-w-0 flex-col gap-1.5">
+      <legend className="mb-1.5 text-[13px] font-medium text-fg-muted">{legend}</legend>
+      <div
+        className="grid h-10 gap-1 rounded-lg border border-line-strong bg-surface-2 p-1"
+        style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
+      >
+        {options.map((o) => {
+          const selected = value === o.value
+          return (
+            <label
+              key={o.value}
+              className={cn(
+                'relative flex min-w-0 cursor-pointer items-center justify-center gap-1 rounded-md px-0.5 text-[12px] font-medium transition-colors sm:gap-1.5 sm:px-1 sm:text-[13px]',
+                'has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-1 has-[:focus-visible]:outline-primary-text',
+                selected ? cn(o.on, 'shadow-card') : 'text-fg-muted hover:bg-fg/5 hover:text-fg',
+              )}
+            >
+              <input type="radio" name={name} value={o.value} checked={selected} onChange={() => onChange(o.value)} className="sr-only" />
+              <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full sm:h-2 sm:w-2', selected ? (o.onDot ?? 'bg-white/90') : o.dot)} aria-hidden />
+              <span className="truncate">{o.label}</span>
+            </label>
+          )
+        })}
+      </div>
+    </fieldset>
   )
 }

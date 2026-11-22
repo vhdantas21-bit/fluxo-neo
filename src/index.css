@@ -60,6 +60,7 @@
   --color-brand-white: #fefefe;
   --color-brand-gray: #424242;
   /* Cinza da marca aplicado a superfícies (calendário) */
+  --color-graphite: #5f5f5f;
   --color-graphite-soft: #2a2a2a;
   --color-graphite-line: #4a4a4a;
   --color-graphite-fg: #d4d4d4;
@@ -269,6 +270,7 @@
   --color-navy-line: #c9d0e8;
   --color-navy-fg: #1f2f6b;
 
+  --color-graphite: #6b6b6b;
   --color-graphite-soft: #ededee;
   --color-graphite-line: #d2d2d5;
   --color-graphite-fg: #424242;
