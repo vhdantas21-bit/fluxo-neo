@@ -1,13 +1,13 @@
 import { useMemo, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Camera, CalendarClock, CalendarCheck, CalendarDays, CalendarX2, CircleCheck, CircleDashed, Flame, Plus, Timer } from 'lucide-react'
+import { ArrowRight, CalendarClock, CalendarCheck, CalendarDays, CalendarX2, CircleCheck, CircleDashed, Flame, Plus, Timer } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { EmptyState, ProgressBar } from '@/components/ui/misc'
 import { MonthCalendar } from '@/components/calendar/MonthCalendar'
 import { ColorDot, DueChip, PriorityBadge, StatusBadge } from '@/components/tasks/TaskBits'
 import { STATUS_THEME } from '@/components/tasks/statusTheme'
 import { useTaskModal } from '@/components/tasks/TaskModalProvider'
-import { Avatar, useAvatarPicker, useDisplayName } from '@/components/profile/Avatar'
+import { ProfilePhotoButton, useAvatarPicker, useDisplayName } from '@/components/profile/Avatar'
 import { useData } from '@/store/DataProvider'
 import { activeTasks, countByStatus, priorityTasks, todayProgress, upcomingDeadlines } from '@/store/selectors'
 import { formatLong } from '@/lib/dates'
@@ -32,7 +32,6 @@ export function DashboardPage() {
     <div className="mx-auto max-w-6xl">
       {/* Destaque: foto e nome do usuário + tarefas em andamento */}
       <section className="surface-panel relative mb-6 overflow-hidden rounded-2xl px-6 py-7 sm:px-8 sm:py-9">
-        {avatarPicker.input}
         <div className="flex items-center justify-between gap-5">
           <div className="flex min-w-0 flex-col items-start gap-5">
             <div className="min-w-0">
@@ -59,23 +58,9 @@ export function DashboardPage() {
           </div>
 
           <div className="flex shrink-0 flex-col items-center gap-2">
-            <button
-              type="button"
-              onClick={avatarPicker.choose}
-              disabled={avatarPicker.busy}
-              className="group relative rounded-full ring-4 ring-line-strong focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-text"
-              aria-label={avatarPicker.hasPhoto ? 'Trocar foto de perfil' : 'Adicionar foto de perfil'}
-              title={avatarPicker.hasPhoto ? 'Trocar foto' : 'Adicionar foto'}
-            >
-              <Avatar src={data.profile.avatar} name={name} className="h-20 w-20 text-[40px] sm:h-32 sm:w-32 sm:text-[64px]" />
-              <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/55 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
-                {avatarPicker.busy ? (
-                  <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" aria-hidden />
-                ) : (
-                  <Camera size={22} aria-hidden />
-                )}
-              </span>
-            </button>
+            <ProfilePhotoButton size="lg" />
+            {/* Seletor próprio do atalho "Adicionar foto" abaixo da foto */}
+            {avatarPicker.input}
             {!avatarPicker.hasPhoto && (
               <button type="button" onClick={avatarPicker.choose} className="text-xs text-navy-fg hover:text-fg hover:underline">
                 Adicionar foto

@@ -108,7 +108,7 @@ export function SettingsPage() {
               type="button"
               onClick={avatarPicker.choose}
               disabled={avatarPicker.busy}
-              className="group relative rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+              className="group relative flex shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
               aria-label={avatarPicker.hasPhoto ? 'Trocar foto de perfil' : 'Adicionar foto de perfil'}
             >
               <Avatar src={data.profile.avatar} name={displayName} className="h-20 w-20 text-[40px]" />

@@ -321,7 +321,7 @@ function Sidebar() {
           </Link>
         ) : (
           <div className="flex items-center gap-2.5">
-            <Link to="/configuracoes" className="rounded-full" aria-label="Editar perfil" title="Editar perfil">
+            <Link to="/configuracoes" className="flex shrink-0 rounded-full" aria-label="Editar perfil" title="Editar perfil">
               <Avatar src={data.profile.avatar} name={name} className="h-9 w-9 text-[18px]" />
             </Link>
             <span className="min-w-0 flex-1">

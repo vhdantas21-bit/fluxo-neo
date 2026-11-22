@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { UserRound } from 'lucide-react'
+import { Camera, UserRound } from 'lucide-react'
 import { useAuth } from '@/auth/AuthProvider'
 import { useToast } from '@/components/ui/Toast'
 import { useData } from '@/store/DataProvider'
@@ -29,7 +29,8 @@ export function Avatar({ src, name, className }: AvatarProps) {
   return (
     <span
       className={cn(
-        'relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-deep font-semibold text-fg select-none',
+        // flex (e não inline-flex): sem o espaço da linha de texto embaixo, o anel fica rente à foto.
+        'relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-deep font-semibold text-fg select-none',
         className,
       )}
     >
@@ -90,4 +91,46 @@ export function useAvatarPicker() {
       toast.success('Foto removida.')
     },
   }
+}
+
+const PHOTO_SIZE = {
+  lg: { avatar: 'h-20 w-20 text-[40px] sm:h-32 sm:w-32 sm:text-[64px]', ring: 'ring-4', icon: 22 },
+  md: { avatar: 'h-12 w-12 text-[24px] sm:h-14 sm:w-14 sm:text-[28px]', ring: 'ring-[3px]', icon: 18 },
+}
+
+/**
+ * Foto de perfil clicável (troca a foto), com anel e câmera ao passar o mouse.
+ * Usada no destaque do Início e no cabeçalho do Meu quadro, para ficarem iguais.
+ */
+export function ProfilePhotoButton({ size = 'lg', className }: { size?: keyof typeof PHOTO_SIZE; className?: string }) {
+  const { data } = useData()
+  const name = useDisplayName()
+  const picker = useAvatarPicker()
+  const s = PHOTO_SIZE[size]
+  return (
+    <>
+      {picker.input}
+      <button
+        type="button"
+        onClick={picker.choose}
+        disabled={picker.busy}
+        className={cn(
+          'group relative flex shrink-0 rounded-full ring-line-strong focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-text',
+          s.ring,
+          className,
+        )}
+        aria-label={picker.hasPhoto ? 'Trocar foto de perfil' : 'Adicionar foto de perfil'}
+        title={picker.hasPhoto ? 'Trocar foto' : 'Adicionar foto'}
+      >
+        <Avatar src={data.profile.avatar} name={name} className={s.avatar} />
+        <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/55 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+          {picker.busy ? (
+            <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" aria-hidden />
+          ) : (
+            <Camera size={s.icon} aria-hidden />
+          )}
+        </span>
+      </button>
+    </>
+  )
 }

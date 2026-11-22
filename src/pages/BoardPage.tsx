@@ -5,6 +5,7 @@ import { KanbanBoard } from '@/components/board/KanbanBoard'
 import { TaskFiltersBar } from '@/components/tasks/TaskFiltersBar'
 import { PageHeader } from '@/components/ui/misc'
 import { TouchHint } from '@/components/ui/TouchHint'
+import { ProfilePhotoButton } from '@/components/profile/Avatar'
 import { useData } from '@/store/DataProvider'
 import { activeTasks, countActiveFilters, emptyFilters, filterTasks, type TaskFilters } from '@/store/selectors'
 import { BOARD_STATUSES, STATUS_LABEL, type BoardStatus } from '@/types'
@@ -24,6 +25,7 @@ export function BoardPage() {
   return (
     <div className="flex min-h-[calc(100dvh-10rem)] flex-col lg:h-[calc(100dvh-7.5rem)]">
       <PageHeader
+        leading={<ProfilePhotoButton size="md" />}
         title="Meu quadro"
         description="Arraste as tarefas entre colunas à medida que avançam. Concentre-se no que está em “Fazendo”."
         actions={
