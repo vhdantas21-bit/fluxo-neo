@@ -22,6 +22,14 @@ export const SHORTCUT_GROUPS: Array<{ title: string; items: Array<{ keys: string
     ],
   },
   {
+    title: 'Na Agenda',
+    items: [
+      { keys: [['T']], label: 'Ir para hoje' },
+      { keys: [['W'], ['M'], ['Q'], ['A']], label: 'Semana, Mês, 3 Meses, Programação' },
+      { keys: [['←', '→']], label: 'Período anterior / seguinte' },
+    ],
+  },
+  {
     title: 'No quadro (com um cartão selecionado)',
     items: [
       { keys: [['Espaço']], label: 'Pegar / soltar o cartão' },

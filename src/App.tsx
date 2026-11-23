@@ -27,6 +27,7 @@ import {
   SettingsPage,
   StatsPage,
   WeekSummaryPage,
+  AgendaPage,
   prefetchRoute,
 } from '@/pages/lazyPages'
 
@@ -94,7 +95,7 @@ function AppRoutes() {
           <Route path="projetos/:id" element={<ProjectDetailPage />} />
           <Route path="semana" element={<WeekSummaryPage />} />
           <Route path="calendario" element={<Navigate to="/" replace />} />
-          <Route path="agenda" element={<Navigate to="/" replace />} />
+          <Route path="agenda" element={<AgendaPage />} />
           <Route path="estatisticas" element={<StatsPage />} />
           <Route path="configuracoes" element={<SettingsPage />} />
           <Route path="pesquisa" element={<SearchPage />} />

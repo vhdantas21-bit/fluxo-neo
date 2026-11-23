@@ -60,6 +60,8 @@ export function BacklogPage() {
       priority: 'medium',
       startDate: null,
       dueDate: null,
+        startTime: null,
+        endTime: null,
       projectId: filters.projectId && filters.projectId !== 'none' ? filters.projectId : null,
       categoryId: null,
       notes: '',

@@ -66,7 +66,7 @@ export function SettingsPage() {
     setImporting(true)
     try {
       const plan = planImport(await file.text(), data)
-      const total = plan.tasks.length + plan.projects.length + plan.categories.length
+      const total = plan.tasks.length + plan.projects.length + plan.categories.length + plan.reminders.length
       if (total === 0) {
         toast.success(plan.skipped ? 'Tudo neste arquivo já está nos seus dados. Nada a importar.' : 'O arquivo não tem itens para importar.')
         return
@@ -75,6 +75,7 @@ export function SettingsPage() {
         plan.tasks.length ? pluralize(plan.tasks.length, 'tarefa', 'tarefas') : '',
         plan.projects.length ? pluralize(plan.projects.length, 'projeto', 'projetos') : '',
         plan.categories.length ? pluralize(plan.categories.length, 'categoria', 'categorias') : '',
+        plan.reminders.length ? pluralize(plan.reminders.length, 'lembrete', 'lembretes') : '',
       ].filter(Boolean)
       const notes = [
         plan.skipped ? (plan.skipped === 1 ? '1 item já existe e será ignorado.' : `${plan.skipped} itens já existem e serão ignorados.`) : '',

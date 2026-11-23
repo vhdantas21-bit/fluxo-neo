@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
-import { Archive, ArchiveRestore, CalendarClock, Copy, Ellipsis, Flag, FolderKanban, ListChecks, Play, Plus, Repeat, StickyNote, Tag, Trash, X } from 'lucide-react'
+import { Archive, ArchiveRestore, CalendarClock, Clock, Copy, Ellipsis, Flag, FolderKanban, ListChecks, Play, Plus, Repeat, StickyNote, Tag, Trash, X } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Select, Textarea } from '@/components/ui/Form'
@@ -29,6 +29,8 @@ const blankDraft = (): TaskDraft => ({
   priority: 'medium',
   startDate: null,
   dueDate: null,
+  startTime: null,
+  endTime: null,
   projectId: null,
   categoryId: null,
   notes: '',
@@ -36,7 +38,7 @@ const blankDraft = (): TaskDraft => ({
   subtasks: [],
 })
 
-type Errors = Partial<Record<'title' | 'description' | 'notes' | 'dueDate', string>>
+type Errors = Partial<Record<'title' | 'description' | 'notes' | 'dueDate' | 'time', string>>
 
 function validate(d: TaskDraft): Errors {
   const e: Errors = {}
@@ -46,6 +48,8 @@ function validate(d: TaskDraft): Errors {
   if (d.notes.length > LIMITS.notes) e.notes = `Máximo de ${LIMITS.notes} caracteres.`
   if (d.startDate && d.dueDate && d.dueDate < d.startDate)
     e.dueDate = 'A data limite não pode ser anterior à data de início.'
+  if (d.endTime && !d.startTime) e.time = 'Informe também o horário de início.'
+  else if (d.startTime && d.endTime && d.endTime <= d.startTime) e.time = 'O fim precisa ser depois do início.'
   return e
 }
 
@@ -329,11 +333,67 @@ export function TaskModal({ open, taskId, defaults, onClose }: Props) {
                 type="date"
                 value={draft.dueDate ?? ''}
                 min={draft.startDate ?? undefined}
-                onChange={(e) => set('dueDate', e.target.value || null)}
+                onChange={(e) => {
+                  set('dueDate', e.target.value || null)
+                  // Sem data limite, o horário não tem dia: é limpo junto.
+                  if (!e.target.value) {
+                    set('startTime', null)
+                    set('endTime', null)
+                  }
+                }}
                 aria-invalid={!!errors.dueDate}
               />
             </Field>
           </div>
+
+          <Field
+            label={
+              <span className="inline-flex items-center gap-1.5">
+                <Clock size={13} className={draft.startTime ? 'text-primary-text' : 'text-fg-subtle'} aria-hidden /> Horário
+                <span className="font-normal text-fg-subtle">(opcional)</span>
+              </span>
+            }
+            htmlFor="task-start-time"
+            error={errors.time}
+            hint={draft.dueDate ? 'No dia da data limite. Aparece em blocos na vista Semana da Agenda.' : 'Defina a data limite para escolher um horário.'}
+          >
+            <div className="flex items-center gap-2">
+              <Input
+                id="task-start-time"
+                type="time"
+                step={900}
+                disabled={!draft.dueDate}
+                value={draft.startTime ?? ''}
+                onChange={(e) => set('startTime', e.target.value || null)}
+                aria-label="Horário de início"
+                aria-invalid={!!errors.time}
+                className="max-w-36"
+              />
+              <span className="text-[13px] text-fg-subtle">até</span>
+              <Input
+                type="time"
+                step={900}
+                disabled={!draft.dueDate || !draft.startTime}
+                value={draft.endTime ?? ''}
+                onChange={(e) => set('endTime', e.target.value || null)}
+                aria-label="Horário de término"
+                aria-invalid={!!errors.time}
+                className="max-w-36"
+              />
+              {(draft.startTime || draft.endTime) && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    set('startTime', null)
+                    set('endTime', null)
+                  }}
+                >
+                  Dia inteiro
+                </Button>
+              )}
+            </div>
+          </Field>
         </section>
 
         {/* Organização: projeto e categoria */}

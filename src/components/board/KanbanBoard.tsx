@@ -317,6 +317,8 @@ function QuickAdd({ status, className }: { status: BoardStatus; className?: stri
       priority: 'medium',
       startDate: null,
       dueDate: null,
+        startTime: null,
+        endTime: null,
       projectId: null,
       categoryId: null,
       notes: '',

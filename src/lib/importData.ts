@@ -1,4 +1,4 @@
-import type { AppData, Category, Priority, Project, ProjectStatus, Recurrence, Subtask, Task, TaskStatus } from '@/types'
+import type { AppData, Category, Priority, Project, ProjectStatus, Recurrence, Reminder, Subtask, Task, TaskStatus } from '@/types'
 import { uid } from './utils'
 
 /**
@@ -20,6 +20,7 @@ export interface ImportPlan {
   projects: Project[]
   categories: Category[]
   tasks: Task[]
+  reminders: Reminder[]
   /** Já existiam (mesmo id, ou categoria com o mesmo nome). */
   skipped: number
   /** Registros sem os campos mínimos (ex.: tarefa sem título). */
@@ -63,6 +64,11 @@ function dates(start: unknown, due: unknown): [string | null, string | null] {
 function fingerprint(name: string, created: string) {
   const d = new Date(created)
   return `${name.trim().toLowerCase()}|${Number.isNaN(d.getTime()) ? created : d.toISOString()}`
+}
+
+/** Horário `HH:MM` válido (00:00–23:59). */
+function time(v: unknown): string | null {
+  return typeof v === 'string' && /^([01]\d|2[0-3]):[0-5]\d/.test(v) ? v.slice(0, 5) : null
 }
 
 function recurrence(v: unknown): Recurrence | null {
@@ -198,6 +204,12 @@ export function planImport(text: string, current: AppData): ImportPlan {
       priority: oneOf(t.priority, PRIORITIES, 'medium'),
       startDate,
       dueDate,
+      ...(() => {
+        // Horário só faz sentido com data limite; fim antes do início é descartado.
+        const st = dueDate ? time(t.startTime) : null
+        const et = st ? time(t.endTime) : null
+        return { startTime: st, endTime: et && et > st! ? et : null }
+      })(),
       projectId: typeof t.projectId === 'string' ? (projectIds.get(t.projectId) ?? null) : null,
       categoryId: typeof t.categoryId === 'string' ? (categoryIds.get(t.categoryId) ?? null) : null,
       notes: str(t.notes, 10000),
@@ -212,5 +224,28 @@ export function planImport(text: string, current: AppData): ImportPlan {
     })
   }
 
-  return { projects, categories, tasks, skipped, invalid }
+  // Lembretes da Agenda (mesmo id, ou mesmo título e instante, já existentes são ignorados).
+  const existingReminders = new Set(current.reminders.map((r) => r.id))
+  const reminderPrints = new Set(current.reminders.map((r) => fingerprint(r.title, r.remindAt)))
+  const reminders: Reminder[] = []
+  for (const r of Array.isArray(raw.reminders) ? raw.reminders : []) {
+    if (!isRec(r)) {
+      invalid++
+      continue
+    }
+    const name = title(r.title, 200)
+    const at = typeof r.remindAt === 'string' && !Number.isNaN(new Date(r.remindAt).getTime()) ? new Date(r.remindAt).toISOString() : null
+    if (!name || !at) {
+      invalid++
+      continue
+    }
+    if ((typeof r.id === 'string' && existingReminders.has(r.id)) || reminderPrints.has(fingerprint(name, at))) {
+      skipped++
+      continue
+    }
+    reminderPrints.add(fingerprint(name, at))
+    reminders.push({ id: uid(), title: name, remindAt: at, color: typeof r.color === 'string' ? color(r.color, '') || null : null, done: r.done === true, createdAt: timestamp(r.createdAt, now) })
+  }
+
+  return { projects, categories, tasks, reminders, skipped, invalid }
 }

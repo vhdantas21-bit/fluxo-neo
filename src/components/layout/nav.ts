@@ -1,4 +1,4 @@
-import { CalendarRange, ChartColumn, Columns3, FolderKanban, House, Inbox, Settings, type LucideIcon } from 'lucide-react'
+import { CalendarDays, CalendarRange, ChartColumn, Columns3, FolderKanban, House, Inbox, Settings, type LucideIcon } from 'lucide-react'
 
 export interface NavItem {
   to: string
@@ -13,6 +13,7 @@ export const NAV: NavItem[] = [
   { to: '/backlog', label: 'Backlog', short: 'Backlog', icon: Inbox },
   { to: '/projetos', label: 'Projetos', short: 'Projetos', icon: FolderKanban },
   { to: '/semana', label: 'Resumo da semana', short: 'Semana', icon: CalendarRange },
+  { to: '/agenda', label: 'Agenda', short: 'Agenda', icon: CalendarDays },
   { to: '/estatisticas', label: 'Estatísticas', short: 'Estatísticas', icon: ChartColumn },
   { to: '/configuracoes', label: 'Configurações', short: 'Configurações', icon: Settings },
 ]

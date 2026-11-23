@@ -1,5 +1,5 @@
 import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js'
-import type { AppData, Category, Priority, Profile, Project, ProjectStatus, Recurrence, Subtask, Task, TaskStatus } from '@/types'
+import type { AppData, Category, Priority, Profile, Project, ProjectStatus, Recurrence, Reminder, Subtask, Task, TaskStatus } from '@/types'
 import { NetworkError, isNetworkError, type DataRepository } from './repository'
 
 // Linhas tal como existem no PostgreSQL (ver supabase/migrations).
@@ -15,6 +15,8 @@ interface TaskRow {
   category_id: string | null
   notes: string
   recurrence: Recurrence | null
+  start_time?: string | null
+  end_time?: string | null
   position: number
   completed_at: string | null
   archived_at: string | null
@@ -39,6 +41,14 @@ interface ProjectRow {
   created_at: string
   updated_at: string
 }
+interface ReminderRow {
+  id: string
+  title: string
+  remind_at: string
+  color: string | null
+  done: boolean
+  created_at: string
+}
 interface CategoryRow {
   id: string
   name: string
@@ -47,6 +57,14 @@ interface CategoryRow {
 }
 
 const PAGE = 1000
+
+/** "09:30:00" → "09:30" (o PostgreSQL devolve segundos). */
+const hhmm = (v: string | null | undefined) => (v ? v.slice(0, 5) : null)
+
+/** Tabela ou coluna ainda inexistente (migração 0005 não aplicada). */
+const missingSchema = (e: PostgrestError | null) => !!e && ['PGRST205', 'PGRST204', '42P01', '42703'].includes(e.code)
+
+const NEEDS_MIGRATION = 'Para usar lembretes e horários, aplique a migração supabase/migrations/0005_agenda.sql no Supabase.'
 
 function check(error: PostgrestError | null) {
   if (!error) return
@@ -68,10 +86,38 @@ function translateError(e: PostgrestError): string {
 export class SupabaseRepository implements DataRepository {
   readonly kind = 'supabase' as const
 
+  /**
+   * Recursos da Agenda (migração 0005). Detectados na carga: com o banco ainda
+   * sem a migração, o app continua funcionando e só os lembretes/horários ficam
+   * indisponíveis (em vez de todas as gravações falharem).
+   */
+  private hasTimes = false
+  private hasReminders = false
+
   constructor(
     private readonly db: SupabaseClient,
     private readonly userId: string,
   ) {}
+
+  private async detectAgenda(): Promise<ReminderRow[]> {
+    if (!this.hasTimes) {
+      const probe = await this.db.from('tasks').select('start_time').limit(1)
+      if (probe.error && !missingSchema(probe.error)) check(probe.error)
+      this.hasTimes = !probe.error
+    }
+    const out: ReminderRow[] = []
+    for (let from = 0; ; from += PAGE) {
+      const { data, error } = await this.db.from('reminders').select('*').order('remind_at').range(from, from + PAGE - 1)
+      if (missingSchema(error)) {
+        this.hasReminders = false
+        return []
+      }
+      check(error)
+      this.hasReminders = true
+      out.push(...((data ?? []) as ReminderRow[]))
+      if (!data || data.length < PAGE) return out
+    }
+  }
 
   private async fetchAll<T>(table: string, order: string): Promise<T[]> {
     const out: T[] = []
@@ -96,6 +142,7 @@ export class SupabaseRepository implements DataRepository {
       this.db.from('profiles').select('display_name, wip_limit, avatar').eq('id', this.userId).maybeSingle(),
     ])
     check(profileRes.error)
+    const reminderRows = await this.detectAgenda()
 
     const subsByTask = new Map<string, Subtask[]>()
     for (const s of subRows) {
@@ -113,6 +160,8 @@ export class SupabaseRepository implements DataRepository {
         priority: r.priority,
         startDate: r.start_date,
         dueDate: r.due_date,
+        startTime: hhmm(r.start_time),
+        endTime: hhmm(r.end_time),
         projectId: r.project_id,
         categoryId: r.category_id,
         notes: r.notes,
@@ -136,6 +185,14 @@ export class SupabaseRepository implements DataRepository {
         updatedAt: r.updated_at,
       })),
       categories: categoryRows.map((r) => ({ id: r.id, name: r.name, color: r.color, createdAt: r.created_at })),
+      reminders: reminderRows.map((r) => ({
+        id: r.id,
+        title: r.title,
+        remindAt: r.remind_at,
+        color: r.color,
+        done: r.done,
+        createdAt: r.created_at,
+      })),
       profile: {
         displayName: (profileRes.data?.display_name as string | undefined) ?? '',
         wipLimit: profileRes.data ? ((profileRes.data.wip_limit as number | null) ?? null) : 3,
@@ -159,6 +216,8 @@ export class SupabaseRepository implements DataRepository {
       category_id: t.categoryId,
       notes: t.notes,
       recurrence: t.recurrence,
+      // Só envia horários se o banco já tem as colunas (migração 0005).
+      ...(this.hasTimes ? { start_time: t.startTime, end_time: t.endTime } : {}),
       position: t.position,
       completed_at: t.completedAt,
       archived_at: t.archivedAt,
@@ -212,6 +271,19 @@ export class SupabaseRepository implements DataRepository {
     check((await this.db.from('categories').delete().eq('id', id)).error)
   }
 
+  async saveReminder(r: Reminder) {
+    if (!this.hasReminders) throw new Error(NEEDS_MIGRATION)
+    const { error } = await this.db
+      .from('reminders')
+      .upsert({ id: r.id, title: r.title, remind_at: r.remindAt, color: r.color, done: r.done, created_at: r.createdAt })
+    check(error)
+  }
+
+  async deleteReminder(id: string) {
+    if (!this.hasReminders) throw new Error(NEEDS_MIGRATION)
+    check((await this.db.from('reminders').delete().eq('id', id)).error)
+  }
+
   async saveProfile(profile: Profile) {
     const { error } = await this.db
       .from('profiles')
@@ -234,8 +306,16 @@ export class SupabaseRepository implements DataRepository {
         )
     }
     channel.subscribe()
+    // Lembretes num canal à parte: se a tabela ainda não existir, não afeta o resto.
+    const reminders = this.db
+      .channel(`fluxo-reminders-${this.userId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reminders', filter: `user_id=eq.${this.userId}` }, () => onRemoteChange())
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'reminders', filter: `user_id=eq.${this.userId}` }, () => onRemoteChange())
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'reminders' }, (payload) => onRemoteChange((payload.old as { id?: string }).id))
+      .subscribe()
     return () => {
       void this.db.removeChannel(channel)
+      void this.db.removeChannel(reminders)
     }
   }
 }

@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { isNetworkError, type DataRepository } from '@/data/repository'
-import type { AppData, Category, Profile, Project, Subtask, Task, TaskStatus } from '@/types'
+import type { AppData, Category, Profile, Project, Reminder, Subtask, Task, TaskStatus } from '@/types'
 import { errorMessage, nowISO, uid } from '@/lib/utils'
 import { nextOccurrence } from '@/lib/recurrence'
 import { formatRelative } from '@/lib/dates'
@@ -46,11 +46,16 @@ interface DataApi {
 
   /** Acrescenta projetos, categorias e tarefas de um arquivo importado (ver lib/importData). */
   importData: (plan: ImportPlan) => void
+
+  /** Lembretes da Agenda (separados das tarefas do quadro). */
+  createReminder: (input: { title: string; remindAt: string; color?: string | null }) => Reminder
+  updateReminder: (id: string, patch: Partial<Omit<Reminder, 'id' | 'createdAt'>>) => void
+  deleteReminder: (id: string) => void
 }
 
 const DataContext = createContext<DataApi | null>(null)
 
-const emptyData: AppData = { tasks: [], projects: [], categories: [], profile: { displayName: '', wipLimit: 3, avatar: null } }
+const emptyData: AppData = { tasks: [], projects: [], categories: [], reminders: [], profile: { displayName: '', wipLimit: 3, avatar: null } }
 
 /** Aplica a mudança de estado mantendo a data de conclusão coerente. */
 function withStatus(t: Task, status: TaskStatus, now: string): Task {
@@ -529,12 +534,14 @@ export function DataProvider({ repo, children }: { repo: DataRepository; childre
         projects: [...d.projects, ...plan.projects],
         categories: [...d.categories, ...plan.categories],
         tasks: [...d.tasks, ...tasks],
+        reminders: [...d.reminders, ...plan.reminders],
       })
       // Projetos e categorias primeiro (as tarefas apontam para eles); tarefas em lotes.
       // Se o servidor recusar um lote, reenvia tarefa por tarefa: só as recusadas ficam de fora.
       persist(async () => {
         for (const p of plan.projects) await repo.saveProject(p)
         for (const c of plan.categories) await repo.saveCategory(c)
+        for (const r of plan.reminders) await repo.saveReminder(r)
         const refused: Task[] = []
         for (let i = 0; i < tasks.length; i += 200) {
           const batch = tasks.slice(i, i + 200)
@@ -560,6 +567,57 @@ export function DataProvider({ repo, children }: { repo: DataRepository; childre
             `${refused.length === 1 ? '1 tarefa foi recusada' : `${refused.length} tarefas foram recusadas`} pelo servidor e não foi importada: ${names}${refused.length > 3 ? '…' : ''}`,
           )
         }
+      })
+    },
+    [commit, persist, repo, toast],
+  )
+
+  // ---- Lembretes -----------------------------------------------------------
+
+  const createReminder = useCallback(
+    (input: { title: string; remindAt: string; color?: string | null }) => {
+      const reminder: Reminder = {
+        id: uid(),
+        title: input.title.trim().slice(0, 200),
+        remindAt: input.remindAt,
+        color: input.color ?? null,
+        done: false,
+        createdAt: nowISO(),
+      }
+      const d = dataRef.current
+      commit({ ...d, reminders: [...d.reminders, reminder] })
+      persist(() => repo.saveReminder(reminder))
+      return reminder
+    },
+    [commit, persist, repo],
+  )
+
+  const updateReminder = useCallback(
+    (id: string, patch: Partial<Omit<Reminder, 'id' | 'createdAt'>>) => {
+      const d = dataRef.current
+      const cur = d.reminders.find((r) => r.id === id)
+      if (!cur) return
+      const next = { ...cur, ...patch }
+      commit({ ...d, reminders: d.reminders.map((r) => (r.id === id ? next : r)) })
+      persist(() => repo.saveReminder(next))
+    },
+    [commit, persist, repo],
+  )
+
+  const deleteReminder = useCallback(
+    (id: string) => {
+      const d = dataRef.current
+      const cur = d.reminders.find((r) => r.id === id)
+      if (!cur) return
+      commit({ ...d, reminders: d.reminders.filter((r) => r.id !== id) })
+      persist(() => repo.deleteReminder(id))
+      toast.success('Lembrete excluído.', {
+        label: 'Desfazer',
+        onClick: () => {
+          const now = dataRef.current
+          commit({ ...now, reminders: [...now.reminders, cur] })
+          persist(() => repo.saveReminder(cur))
+        },
       })
     },
     [commit, persist, repo, toast],
@@ -600,11 +658,15 @@ export function DataProvider({ repo, children }: { repo: DataRepository; childre
       deleteCategory,
       updateProfile,
       importData,
+      createReminder,
+      updateReminder,
+      deleteReminder,
     }),
     [
       data, state, loadError, pending, repo.kind, reload, createTask, updateTask, moveTask, moveTasks,
       setTasksStartDate, duplicateTask, archiveTasks, restoreTasks, deleteTasks, toggleSubtask, createProject,
       updateProject, deleteProject, createCategory, updateCategory, deleteCategory, updateProfile, importData,
+      createReminder, updateReminder, deleteReminder,
     ],
   )
 

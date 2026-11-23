@@ -1,9 +1,9 @@
-import type { AppData, Category, Profile, Project, Task } from '@/types'
+import type { AppData, Category, Profile, Project, Reminder, Task } from '@/types'
 import type { DataRepository } from './repository'
 
 const STORAGE_KEY = 'fluxo-neo:data:v1'
 
-const empty = (): AppData => ({ tasks: [], projects: [], categories: [], profile: { displayName: '', wipLimit: 3, avatar: null } })
+const empty = (): AppData => ({ tasks: [], projects: [], categories: [], reminders: [], profile: { displayName: '', wipLimit: 3, avatar: null } })
 
 /**
  * Modo local: os dados ficam apenas neste navegador (localStorage).
@@ -23,7 +23,8 @@ export class LocalRepository implements DataRepository {
         ...base,
         ...parsed,
         // Tarefas guardadas antes da recorrência não têm o campo.
-        tasks: (parsed.tasks ?? []).map((t) => ({ ...t, recurrence: t.recurrence ?? null })),
+        tasks: (parsed.tasks ?? []).map((t) => ({ ...t, recurrence: t.recurrence ?? null, startTime: t.startTime ?? null, endTime: t.endTime ?? null })),
+        reminders: parsed.reminders ?? [],
         profile: { ...base.profile, ...parsed.profile },
       }
     } catch {
@@ -104,6 +105,20 @@ export class LocalRepository implements DataRepository {
   saveProfile(profile: Profile) {
     return this.mutate((d) => {
       d.profile = profile
+    })
+  }
+
+  saveReminder(reminder: Reminder) {
+    return this.mutate((d) => {
+      const i = d.reminders.findIndex((r) => r.id === reminder.id)
+      if (i >= 0) d.reminders[i] = reminder
+      else d.reminders.push(reminder)
+    })
+  }
+
+  deleteReminder(id: string) {
+    return this.mutate((d) => {
+      d.reminders = d.reminders.filter((r) => r.id !== id)
     })
   }
 

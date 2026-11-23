@@ -31,6 +31,9 @@ export interface Task {
   /** Data de início / execução planejada. */
   startDate: DateOnly | null
   dueDate: DateOnly | null
+  /** Horário opcional (`HH:MM`) no dia da data limite — usado na vista Semana da Agenda. */
+  startTime: string | null
+  endTime: string | null
   projectId: string | null
   categoryId: string | null
   notes: string
@@ -64,6 +67,18 @@ export interface Category {
   createdAt: Timestamp
 }
 
+/** Lembrete avulso da Agenda: compromisso leve, separado das tarefas do quadro. */
+export interface Reminder {
+  id: string
+  title: string
+  /** Instante do lembrete (ISO 8601). */
+  remindAt: Timestamp
+  /** Cor opcional `#RRGGBB`; sem cor usa a cor padrão dos lembretes. */
+  color: string | null
+  done: boolean
+  createdAt: Timestamp
+}
+
 export interface Profile {
   displayName: string
   /** Limite de tarefas em "Fazendo" (WIP). null = sem limite. */
@@ -76,6 +91,7 @@ export interface AppData {
   tasks: Task[]
   projects: Project[]
   categories: Category[]
+  reminders: Reminder[]
   profile: Profile
 }
 

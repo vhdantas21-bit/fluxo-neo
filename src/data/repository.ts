@@ -1,4 +1,4 @@
-import type { AppData, Category, Profile, Project, Task } from '@/types'
+import type { AppData, Category, Profile, Project, Reminder, Task } from '@/types'
 
 /**
  * Contrato da camada de dados. A interface é independente do backend:
@@ -21,6 +21,8 @@ export interface DataRepository {
   /** Exclui a categoria; as tarefas associadas ficam sem categoria. */
   deleteCategory(id: string): Promise<void>
   saveProfile(profile: Profile): Promise<void>
+  saveReminder(reminder: Reminder): Promise<void>
+  deleteReminder(id: string): Promise<void>
   /**
    * Notifica alterações feitas em outro separador ou dispositivo. Em
    * excluições, `deletedId` indica o registro removido (quando conhecido).

@@ -11,6 +11,7 @@ const loaders = {
   projects: () => import('./ProjectsPage'),
   projectDetail: () => import('./ProjectDetailPage'),
   week: () => import('./WeekSummaryPage'),
+  agenda: () => import('./AgendaPage'),
   stats: () => import('./StatsPage'),
   settings: () => import('./SettingsPage'),
   search: () => import('./SearchPage'),
@@ -32,6 +33,7 @@ export const BacklogPage = page('backlog', 'BacklogPage')
 export const ProjectsPage = page('projects', 'ProjectsPage')
 export const ProjectDetailPage = page('projectDetail', 'ProjectDetailPage')
 export const WeekSummaryPage = page('week', 'WeekSummaryPage')
+export const AgendaPage = page('agenda', 'AgendaPage')
 export const StatsPage = page('stats', 'StatsPage')
 export const SettingsPage = page('settings', 'SettingsPage')
 export const SearchPage = page('search', 'SearchPage')
@@ -48,6 +50,7 @@ const ROUTES: [RegExp, keyof Loaders][] = [
   [/^\/projetos\/?$/, 'projects'],
   [/^\/projetos\/.+/, 'projectDetail'],
   [/^\/semana\/?$/, 'week'],
+  [/^\/agenda\/?$/, 'agenda'],
   [/^\/estatisticas\/?$/, 'stats'],
   [/^\/configuracoes\/?$/, 'settings'],
   [/^\/pesquisa\/?$/, 'search'],

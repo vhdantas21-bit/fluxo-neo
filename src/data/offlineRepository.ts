@@ -1,4 +1,4 @@
-import type { AppData, Category, Profile, Project, Task } from '@/types'
+import type { AppData, Category, Profile, Project, Reminder, Task } from '@/types'
 import { setSyncState } from '@/lib/syncState'
 import { OfflineError, isNetworkError, type DataRepository } from './repository'
 
@@ -27,6 +27,8 @@ type Op =
   | { k: 'saveCategory'; category: Category }
   | { k: 'deleteCategory'; id: string }
   | { k: 'saveProfile'; profile: Profile }
+  | { k: 'saveReminder'; reminder: Reminder }
+  | { k: 'deleteReminder'; id: string }
 
 const RETRY_MS = 20_000
 const cacheKey = (userId: string) => `fluxo-neo:offline:${userId}:cache`
@@ -96,6 +98,13 @@ function apply(d: AppData, op: Op): AppData {
       }
     case 'saveProfile':
       return { ...d, profile: op.profile }
+    case 'saveReminder': {
+      const list = d.reminders ?? []
+      const exists = list.some((r) => r.id === op.reminder.id)
+      return { ...d, reminders: exists ? list.map((r) => (r.id === op.reminder.id ? op.reminder : r)) : [...list, op.reminder] }
+    }
+    case 'deleteReminder':
+      return { ...d, reminders: (d.reminders ?? []).filter((r) => r.id !== op.id) }
   }
 }
 
@@ -110,7 +119,11 @@ export class OfflineRepository implements DataRepository {
     private readonly userId: string,
   ) {
     this.outbox = read<Op[]>(outboxKey(userId)) ?? []
-    this.cache = read<AppData>(cacheKey(userId))
+    const cached = read<AppData>(cacheKey(userId))
+    // Cópias antigas (antes da Agenda) não têm lembretes nem horários.
+    this.cache = cached
+      ? { ...cached, reminders: cached.reminders ?? [], tasks: cached.tasks.map((t) => ({ ...t, startTime: t.startTime ?? null, endTime: t.endTime ?? null })) }
+      : null
     setSyncState({ queued: this.outbox.length })
   }
 
@@ -140,6 +153,10 @@ export class OfflineRepository implements DataRepository {
         return this.inner.deleteCategory(op.id)
       case 'saveProfile':
         return this.inner.saveProfile(op.profile)
+      case 'saveReminder':
+        return this.inner.saveReminder(op.reminder)
+      case 'deleteReminder':
+        return this.inner.deleteReminder(op.id)
     }
   }
 
@@ -233,6 +250,12 @@ export class OfflineRepository implements DataRepository {
   }
   saveProfile(profile: Profile) {
     return this.enqueue({ k: 'saveProfile', profile })
+  }
+  saveReminder(reminder: Reminder) {
+    return this.enqueue({ k: 'saveReminder', reminder })
+  }
+  deleteReminder(id: string) {
+    return this.enqueue({ k: 'deleteReminder', id })
   }
 
   subscribe(onRemoteChange: (deletedId?: string) => void) {
