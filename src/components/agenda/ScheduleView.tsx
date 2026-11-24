@@ -4,7 +4,7 @@ import { StatusBadge } from '@/components/tasks/TaskBits'
 import { fromDateOnly, todayISO } from '@/lib/dates'
 import { cn } from '@/lib/utils'
 import type { DateOnly, Task } from '@/types'
-import { ItemIcon, TONE_DOT } from './AgendaItems'
+import { ItemIcon, TONE_DOT, dotStyle } from './AgendaItems'
 import { durationLabel, taskTone, type AgendaItem } from './model'
 
 const BATCH = 30
@@ -145,7 +145,7 @@ function Row({ it, onOpen, badge, showDate }: { it: AgendaItem; onOpen: (it: Age
       <button type="button" onClick={(e) => onOpen(it, e.currentTarget)} className="flex w-full items-center gap-2 rounded-lg px-1.5 py-2 text-left hover:bg-fg/5 sm:gap-3 sm:px-2">
         <span
           className={cn('h-2.5 w-2.5 shrink-0 rounded-full', TONE_DOT[it.tone])}
-          style={it.reminder?.color && !it.reminder.done ? { background: it.reminder.color } : undefined}
+          style={dotStyle(it)}
           aria-hidden
         />
         <span className="w-[4.25rem] shrink-0 text-[11px] leading-tight text-fg-muted tabular-nums sm:w-28 sm:text-xs">

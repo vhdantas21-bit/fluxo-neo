@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { addDays, addMonths, formatMonth, startOfMonth, startOfWeek, toDateOnly, todayISO } from '@/lib/dates'
 import { cn } from '@/lib/utils'
 import type { DateOnly } from '@/types'
-import { TONE_DOT } from './AgendaItems'
+import { TONE_DOT, dotStyle } from './AgendaItems'
 import { monthDays, type AgendaItem } from './model'
 
 const LETTERS = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D']
@@ -111,7 +111,7 @@ export function DayStrip({ selected, onPick, byDay }: { selected: DateOnly; onPi
             <span className="text-base font-semibold tabular-nums">{d.getDate()}</span>
             <span className="flex h-1.5 gap-0.5" aria-hidden>
               {items.slice(0, 3).map((it) => (
-                <span key={it.key} className={cn('h-1.5 w-1.5 rounded-full', sel ? 'bg-white/90' : TONE_DOT[it.tone])} />
+                <span key={it.key} className={cn('h-1.5 w-1.5 rounded-full', sel ? 'bg-white/90' : TONE_DOT[it.tone])} style={sel ? undefined : dotStyle(it)} />
               ))}
             </span>
           </button>

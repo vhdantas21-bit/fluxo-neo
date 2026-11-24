@@ -14,6 +14,7 @@ import { WeekView, DAY_END, DAY_START, HOUR_PX } from '@/components/agenda/WeekV
 import { QuarterView } from '@/components/agenda/QuarterView'
 import { ScheduleView } from '@/components/agenda/ScheduleView'
 import { ReminderModal } from '@/components/agenda/ReminderModal'
+import { REMINDER_COLORS, lastReminderColor, rememberReminderColor, reminderColor } from '@/components/agenda/reminderColors'
 import {
   VIEW_KEY,
   VIEW_LABEL,
@@ -29,7 +30,7 @@ import {
 import { useData } from '@/store/DataProvider'
 import { addDays, addMonths, formatLong, formatShort, fromDateOnly, startOfMonth, toDateOnly, todayISO } from '@/lib/dates'
 import { cn } from '@/lib/utils'
-import type { DateOnly } from '@/types'
+import type { DateOnly, Reminder } from '@/types'
 
 const PREFS_KEY = 'fluxo-neo:agenda'
 const VIEWS: AgendaView[] = ['week', 'month', 'quarter', 'schedule']
@@ -202,7 +203,7 @@ export function AgendaPage() {
     return data.reminders
       .filter((r) => !r.done && new Date(r.remindAt).getTime() >= now - 3_600_000)
       .sort((a, b) => a.remindAt.localeCompare(b.remindAt))
-      .slice(0, 5)
+      .slice(0, 6)
   }, [data.reminders])
 
   const title = periodTitle(view, view === 'schedule' ? fromDateOnly(selected) : cursor)
@@ -393,20 +394,21 @@ export function AgendaPage() {
   )
 }
 
-/** Lembretes rápidos: texto + dia/hora, e os próximos da lista. */
+/** Lembretes rápidos: texto, dia/hora e cor; a lista dos próximos com "feito" num toque. */
 function QuickReminders({
   date,
   upcoming,
   onOpen,
 }: {
   date: DateOnly
-  upcoming: { id: string; title: string; remindAt: string; color: string | null }[]
+  upcoming: Reminder[]
   onOpen: (id: string, anchor: HTMLElement) => void
 }) {
-  const { createReminder } = useData()
+  const { createReminder, updateReminder } = useData()
   const toast = useToast()
   const [title, setTitle] = useState('')
   const [when, setWhen] = useState(`${date}T09:00`)
+  const [color, setColor] = useState<string | null>(() => lastReminderColor())
   useEffect(() => setWhen((w) => `${date}T${w.slice(11) || '09:00'}`), [date])
 
   const add = (e: FormEvent) => {
@@ -414,15 +416,19 @@ function QuickReminders({
     if (!title.trim()) return
     const [d, t] = when.split('T')
     if (!d || !t) return toast.error('Escolha o dia e a hora do lembrete.')
-    createReminder({ title, remindAt: localInstant(d, t.slice(0, 5)) })
+    createReminder({ title, remindAt: localInstant(d, t.slice(0, 5)), color })
+    rememberReminderColor(color)
     toast.success(`Lembrete criado para ${formatShort(d)} às ${t.slice(0, 5)}.`)
     setTitle('')
   }
 
   return (
-    <section className="surface-panel accent-bar rounded-2xl p-4 [--bar:var(--color-reminder)]">
+    <section className="surface-panel accent-bar rounded-2xl p-4" style={{ ['--bar' as string]: reminderColor(color) }}>
       <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
-        <Bell size={14} className="text-reminder-fg" aria-hidden /> Lembretes rápidos
+        <Bell size={14} style={{ color: reminderColor(color) }} aria-hidden /> Lembretes rápidos
+        {upcoming.length > 0 && (
+          <span className="ml-auto rounded-full bg-reminder-soft px-2 py-0.5 text-[11px] font-semibold text-reminder-fg tabular-nums">{upcoming.length}</span>
+        )}
       </h3>
       <form onSubmit={add} className="flex flex-col gap-2">
         <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex.: Ligar para o contador" aria-label="Texto do lembrete" maxLength={200} />
@@ -432,13 +438,42 @@ function QuickReminders({
             <Plus size={16} />
           </Button>
         </div>
+        <div role="radiogroup" aria-label="Cor do lembrete" className="flex flex-wrap gap-1.5">
+          {REMINDER_COLORS.map((c) => (
+            <button
+              key={c.name}
+              type="button"
+              role="radio"
+              aria-checked={color === c.value}
+              aria-label={c.name}
+              title={c.name}
+              onClick={() => setColor(c.value)}
+              className={cn(
+                'h-5 w-5 rounded-full ring-offset-2 ring-offset-surface transition-transform hover:scale-110',
+                color === c.value && 'ring-2 ring-fg',
+              )}
+              style={{ background: c.hex }}
+            />
+          ))}
+        </div>
       </form>
       {upcoming.length > 0 && (
         <ul className="mt-3 flex flex-col gap-0.5 border-t border-line pt-2">
           {upcoming.map((r) => (
-            <li key={r.id}>
-              <button type="button" onClick={(e) => onOpen(r.id, e.currentTarget)} className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1.5 text-left hover:bg-fg/5">
-                <Bell size={12} className="shrink-0 text-reminder-fg" style={r.color ? { color: r.color } : undefined} aria-hidden />
+            <li key={r.id} className="group flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  updateReminder(r.id, { done: true })
+                  toast.success(`“${r.title}” concluído.`, { label: 'Desfazer', onClick: () => updateReminder(r.id, { done: false }) })
+                }}
+                aria-label={`Marcar “${r.title}” como feito`}
+                title="Marcar como feito"
+                className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-fg-subtle hover:bg-fg/5 hover:text-reminder-fg"
+              >
+                <span className="h-3.5 w-3.5 rounded-full border-2" style={{ borderColor: reminderColor(r.color) }} />
+              </button>
+              <button type="button" onClick={(e) => onOpen(r.id, e.currentTarget)} className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1.5 py-1.5 text-left hover:bg-fg/5">
                 <span className="min-w-0 flex-1 truncate text-[13px]">{r.title}</span>
                 <span className="shrink-0 text-[11px] text-fg-subtle tabular-nums">
                   {new Date(r.remindAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}

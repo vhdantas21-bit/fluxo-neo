@@ -3,7 +3,7 @@ import { useDroppable } from '@dnd-kit/core'
 import { toDateOnly, todayISO } from '@/lib/dates'
 import { cn } from '@/lib/utils'
 import type { DateOnly } from '@/types'
-import { AgendaChip, TONE_DOT } from './AgendaItems'
+import { AgendaChip, TONE_DOT, dotStyle } from './AgendaItems'
 import { WEEKDAYS, monthDays, type AgendaItem } from './model'
 
 /** Altura de uma etiqueta (com o espaço entre elas) e do topo da célula (número do dia). */
@@ -157,7 +157,7 @@ function DayCell({
       {items.length > 0 && (
         <div className="flex flex-wrap gap-0.5 sm:hidden" aria-hidden>
           {items.slice(0, 4).map((it) => (
-            <span key={it.key} className={cn('h-1.5 w-1.5 rounded-full', TONE_DOT[it.tone])} />
+            <span key={it.key} className={cn('h-1.5 w-1.5 rounded-full', TONE_DOT[it.tone])} style={dotStyle(it)} />
           ))}
         </div>
       )}

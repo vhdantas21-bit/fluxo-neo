@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Check, CloudOff, Ellipsis, HardDrive, LoaderCircle, LogOut, RefreshCw } from 'lucide-react'
+import { Check, CloudOff, Ellipsis, HardDrive, LoaderCircle, LogOut, PanelLeftClose, PanelLeftOpen, RefreshCw } from 'lucide-react'
 import { useAuth } from '@/auth/AuthProvider'
 import { useSafeSignOut } from '@/auth/useSafeSignOut'
 import { Avatar, useDisplayName } from '@/components/profile/Avatar'
@@ -18,6 +18,7 @@ import { Spinner } from '@/components/ui/misc'
 import { useToast } from '@/components/ui/Toast'
 import { cn } from '@/lib/utils'
 import { useSyncState } from '@/lib/syncState'
+import { toggleSidebar, useSidebarCollapsed } from '@/lib/sidebarPref'
 import { Logo, LogoMark } from './Logo'
 import { MOBILE_PRIMARY, NAV } from './nav'
 import { ShortcutsDialog } from '@/components/ShortcutsDialog'
@@ -48,6 +49,9 @@ export function AppShell() {
       } else if (!mod && !e.altKey && e.key === '?' && !isTyping(e.target)) {
         e.preventDefault()
         setShortcutsOpen(true)
+      } else if (!mod && !e.altKey && e.key === '[' && !isTyping(e.target)) {
+        e.preventDefault()
+        toggleSidebar()
       } else if (!mod && !e.altKey && e.key.toLowerCase() === 'n' && !isTyping(e.target)) {
         e.preventDefault()
         openNewTask(location.pathname === '/backlog' ? { status: 'backlog' } : undefined)
@@ -130,14 +134,19 @@ function Topbar({ searchOpen, onSearchOpenChange }: { searchOpen: boolean; onSea
   const { pending, repoKind } = useData()
   const navigate = useNavigate()
   const location = useLocation()
+  const collapsed = useSidebarCollapsed()
 
   return (
     <header className="sticky top-0 z-30 overflow-hidden border-b border-glass-border bg-bg/85 shadow-[0_8px_24px_-16px_rgb(0_0_0/0.6)] backdrop-blur-xl supports-[backdrop-filter]:bg-bg/70">
-      <BrandStripes />
+      <BrandStripes collapsed={collapsed} />
       <div className="relative flex h-16 items-center gap-2 px-4 sm:gap-3 sm:px-6 lg:px-0">
-        <Link to="/" className="shrink-0 rounded-lg lg:w-60 lg:px-6" aria-label="FLUXO NEO — início">
-          <Logo className="hidden sm:flex" />
-          <LogoMark className="sm:hidden" />
+        <Link
+          to="/"
+          className={cn('shrink-0 rounded-lg transition-[width] duration-200', collapsed ? 'lg:flex lg:w-[4.5rem] lg:justify-center' : 'lg:w-60 lg:px-6')}
+          aria-label="FLUXO NEO — início"
+        >
+          <Logo className={cn('hidden sm:flex', collapsed && 'lg:hidden')} />
+          <LogoMark className={cn('sm:hidden', collapsed && 'lg:block')} />
         </Link>
         <div className="ml-auto flex items-center gap-2 sm:gap-3 lg:pr-8">
           <ExpandableSearchBar
@@ -163,14 +172,17 @@ function Topbar({ searchOpen, onSearchOpenChange }: { searchOpen: boolean; onSea
 }
 
 /** Faixas diagonais da paleta (assinatura visual da marca), só decorativas. */
-function BrandStripes() {
+function BrandStripes({ collapsed }: { collapsed: boolean }) {
   const stripes = ['#2C50A1', '#132967', '#C43004', '#FEFEFE', '#424242']
   return (
     <svg
       aria-hidden
       viewBox="0 0 200 64"
       preserveAspectRatio="none"
-      className="pointer-events-none absolute inset-y-0 left-[184px] hidden h-full w-36 md:block lg:left-[272px] lg:w-44"
+      className={cn(
+        'pointer-events-none absolute inset-y-0 left-[184px] hidden h-full w-36 transition-[left] duration-200 md:block lg:w-44',
+        collapsed ? 'lg:left-[104px]' : 'lg:left-[272px]',
+      )}
     >
       {stripes.map((color, i) => {
         const x = i * 30
@@ -277,68 +289,101 @@ function Sidebar() {
   const safeSignOut = useSafeSignOut()
   const { data } = useData()
   const name = useDisplayName()
+  const collapsed = useSidebarCollapsed()
 
   return (
-    <aside className="sticky top-16 hidden h-[calc(100dvh-4rem)] w-60 shrink-0 flex-col border-r border-glass-border bg-bg/40 px-3 py-5 backdrop-blur-xl lg:flex">
+    <aside
+      className={cn(
+        'sticky top-16 hidden h-[calc(100dvh-4rem)] shrink-0 flex-col border-r border-glass-border bg-bg/40 py-5 backdrop-blur-xl transition-[width] duration-200 lg:flex',
+        collapsed ? 'w-[4.5rem] px-2' : 'w-60 px-3',
+      )}
+    >
       <nav aria-label="Navegação principal" className="flex flex-col gap-0.5">
         {NAV.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
             to={to}
             end={to === '/'}
+            title={collapsed ? label : undefined}
+            aria-label={collapsed ? label : undefined}
             className={({ isActive }) =>
               cn(
-                'relative flex items-center gap-3 overflow-hidden rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                'relative flex items-center overflow-hidden rounded-lg py-2.5 text-sm font-medium transition-colors',
+                collapsed ? 'justify-center px-0' : 'gap-3 px-3',
                 isActive ? 'bg-primary font-semibold text-white shadow-lift' : 'text-fg-muted hover:bg-fg/5 hover:text-fg',
               )
             }
           >
             {({ isActive }) => (
               <>
-                <Icon size={18} className={isActive ? 'text-white' : 'text-fg-subtle'} aria-hidden />
-                {label}
-                {isActive && (
+                <Icon size={18} className={cn('shrink-0', isActive ? 'text-white' : 'text-fg-subtle')} aria-hidden />
+                {!collapsed && label}
+                {isActive && !collapsed && (
                   // Corte diagonal com as cores da marca, como nas faixas do topo.
                   <span aria-hidden className="pointer-events-none absolute inset-y-0 right-2 flex gap-1">
                     <span className="h-full w-1.5 -skew-x-[24deg] bg-accent" />
                     <span className="h-full w-1.5 -skew-x-[24deg] bg-white/85" />
                   </span>
                 )}
+                {isActive && collapsed && <span aria-hidden className="absolute inset-x-2 bottom-1 h-0.5 rounded-full bg-accent" />}
               </>
             )}
           </NavLink>
         ))}
       </nav>
 
-      <div className="surface-panel mt-auto rounded-xl p-3">
-        {mode === 'local' ? (
-          <Link to="/configuracoes" className="flex items-start gap-2.5 text-xs">
-            <HardDrive size={16} className="mt-0.5 shrink-0 text-fg-subtle" aria-hidden />
-            <span>
-              <span className="block font-medium text-fg">Modo local</span>
-              <span className="text-fg-subtle">Sem conta. Configure o Supabase para sincronizar.</span>
-            </span>
-          </Link>
-        ) : (
-          <div className="flex items-center gap-2.5">
-            <Link to="/configuracoes" className="flex shrink-0 rounded-full" aria-label="Editar perfil" title="Editar perfil">
-              <Avatar src={data.profile.avatar} name={name} className="h-9 w-9 text-[18px]" />
+      <div className="mt-auto flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
+          aria-expanded={!collapsed}
+          title={collapsed ? 'Expandir menu ([)' : 'Recolher menu ([)'}
+          className={cn(
+            'flex h-9 items-center rounded-lg text-[13px] text-fg-subtle transition-colors hover:bg-fg/5 hover:text-fg',
+            collapsed ? 'justify-center' : 'gap-2.5 px-3',
+          )}
+        >
+          {collapsed ? <PanelLeftOpen size={18} aria-hidden /> : <PanelLeftClose size={18} aria-hidden />}
+          {!collapsed && 'Recolher menu'}
+        </button>
+
+        <div className={cn('surface-panel rounded-xl', collapsed ? 'p-1.5' : 'p-3')}>
+          {mode === 'local' ? (
+            <Link to="/configuracoes" title={collapsed ? 'Modo local: sem conta' : undefined} className={cn('flex text-xs', collapsed ? 'justify-center py-1' : 'items-start gap-2.5')}>
+              <HardDrive size={16} className="mt-0.5 shrink-0 text-fg-subtle" aria-hidden />
+              {collapsed ? (
+                <span className="sr-only">Modo local</span>
+              ) : (
+                <span>
+                  <span className="block font-medium text-fg">Modo local</span>
+                  <span className="text-fg-subtle">Sem conta. Configure o Supabase para sincronizar.</span>
+                </span>
+              )}
             </Link>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-[13px] font-medium">{name || 'Sem nome'}</span>
-              <span className="block truncate text-xs text-fg-subtle">{user?.email}</span>
-            </span>
-            <button
-              type="button"
-              onClick={() => void safeSignOut()}
-              className="rounded-md p-1.5 text-fg-subtle hover:bg-surface-2 hover:text-fg"
-              aria-label="Sair"
-              title="Sair"
-            >
-              <LogOut size={16} />
-            </button>
-          </div>
-        )}
+          ) : (
+            <div className={cn('flex items-center', collapsed ? 'flex-col gap-1.5' : 'gap-2.5')}>
+              <Link to="/configuracoes" className="flex shrink-0 rounded-full" aria-label="Editar perfil" title="Editar perfil">
+                <Avatar src={data.profile.avatar} name={name} className="h-9 w-9 text-[18px]" />
+              </Link>
+              {!collapsed && (
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[13px] font-medium">{name || 'Sem nome'}</span>
+                  <span className="block truncate text-xs text-fg-subtle">{user?.email}</span>
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => void safeSignOut()}
+                className="rounded-md p-1.5 text-fg-subtle hover:bg-surface-2 hover:text-fg"
+                aria-label="Sair"
+                title="Sair"
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </aside>
   )

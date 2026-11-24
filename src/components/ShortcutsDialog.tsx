@@ -12,6 +12,7 @@ export const SHORTCUT_GROUPS: Array<{ title: string; items: Array<{ keys: string
       { keys: [['N']], label: 'Nova tarefa' },
       { keys: [['/'], [MOD, 'K']], label: 'Pesquisar' },
       { keys: [['?']], label: 'Mostrar esta lista de atalhos' },
+      { keys: [['[']], label: 'Recolher / expandir o menu lateral' },
     ],
   },
   {

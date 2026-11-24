@@ -10,6 +10,7 @@ import { useData } from '@/store/DataProvider'
 import { formatLong, fromDateOnly } from '@/lib/dates'
 import { cn } from '@/lib/utils'
 import { durationLabel, type AgendaItem, type AgendaTone } from './model'
+import { reminderChipStyle, reminderColor } from './reminderColors'
 
 /** Cores por estado (paleta da marca): Fazendo laranja, A Fazer azul, Backlog cinza, atrasada com borda laranja-coral. */
 const TONE: Record<AgendaTone, string> = {
@@ -35,11 +36,15 @@ export function toneClass(it: AgendaItem) {
   return it.kind === 'start' ? START_TONE[it.tone] : TONE[it.tone]
 }
 
-/** Cor própria de um lembrete (quando escolhida). */
+/** Lembretes: preenchimento, borda e faixa na cor do lembrete (turquesa por padrão). */
 export function reminderStyle(it: AgendaItem): CSSProperties | undefined {
-  const c = it.reminder?.color
-  if (!c || it.reminder?.done) return undefined
-  return { borderColor: c, background: `color-mix(in srgb, ${c} 20%, transparent)`, color: 'var(--color-fg)' }
+  if (!it.reminder || it.reminder.done) return undefined
+  return reminderChipStyle(it.reminder.color)
+}
+
+/** Cor do ponto de um item (lembretes usam a própria cor). */
+export function dotStyle(it: AgendaItem): CSSProperties | undefined {
+  return it.reminder && !it.reminder.done ? { background: reminderColor(it.reminder.color) } : undefined
 }
 
 /** Ponto de cor do item (vista 3 Meses, Programação, listas). */
@@ -53,7 +58,8 @@ export const TONE_DOT: Record<AgendaTone, string> = {
 }
 
 export function ItemIcon({ it, size = 11 }: { it: AgendaItem; size?: number }) {
-  if (it.kind === 'reminder') return <Bell size={size} className="shrink-0" aria-hidden />
+  if (it.kind === 'reminder')
+    return <Bell size={size} className="shrink-0" style={it.reminder && !it.reminder.done ? { color: reminderColor(it.reminder.color) } : undefined} aria-hidden />
   if (it.kind === 'start') return <Play size={size} className="shrink-0" aria-hidden />
   if (it.task?.status === 'doing') return <span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-current" aria-hidden />
   return null
@@ -195,7 +201,7 @@ export function ItemDetails({ it, onClose, onEditReminder }: { it: AgendaItem; o
     return (
       <div className="flex flex-col gap-3">
         <div className="flex items-start gap-2.5">
-          <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-reminder-soft text-reminder-fg" style={r.color ? { color: r.color } : undefined}>
+          <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full text-white" style={{ background: reminderColor(r.color) }}>
             <Bell size={14} aria-hidden />
           </span>
           <div className="min-w-0 flex-1">
@@ -362,7 +368,7 @@ export function ItemList({ items, onOpen, empty }: { items: AgendaItem[]; onOpen
             onClick={(e) => onOpen(it, e.currentTarget)}
             className="flex w-full items-start gap-2.5 rounded-lg px-2 py-1.5 text-left hover:bg-fg/5"
           >
-            <span className={cn('mt-1.5 h-2 w-2 shrink-0 rounded-full', TONE_DOT[it.tone])} style={it.reminder?.color && !it.reminder.done ? { background: it.reminder.color } : undefined} aria-hidden />
+            <span className={cn('mt-1.5 h-2 w-2 shrink-0 rounded-full', TONE_DOT[it.tone])} style={dotStyle(it)} aria-hidden />
             <span className="min-w-0 flex-1">
               <span className={cn('block text-[13px] leading-snug', it.tone === 'done' && 'text-fg-subtle line-through')}>{it.title}</span>
               <span className="mt-0.5 flex items-center gap-1.5 text-[11px] text-fg-subtle">

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { DndContext, DragOverlay, useDraggable, useDroppable, type DragEndEvent } from '@dnd-kit/core'
-import { ChevronLeft, ChevronRight, Flag, Play } from 'lucide-react'
+import { Bell, ChevronLeft, ChevronRight, Flag, Play } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { useToast } from '@/components/ui/Toast'
 import { useTaskModal } from '@/components/tasks/TaskModalProvider'
@@ -24,7 +24,10 @@ import {
 } from '@/lib/dates'
 import { cn } from '@/lib/utils'
 import { TouchHint, dismissHint } from '@/components/ui/TouchHint'
-import type { Task } from '@/types'
+import type { Reminder, Task } from '@/types'
+import { Link } from 'react-router-dom'
+import { reminderChipStyle, reminderColor } from '@/components/agenda/reminderColors'
+import { reminderParts } from '@/components/agenda/model'
 
 interface Entry {
   key: string
@@ -59,6 +62,17 @@ export function MonthCalendar() {
       list.sort((a, b) => Number(a.task.status === 'done') - Number(b.task.status === 'done') || a.task.title.localeCompare(b.task.title))
     return map
   }, [data.tasks])
+
+  // Lembretes da Agenda: aqui só aparecem (criar e editar é na página Agenda).
+  const remindersByDay = useMemo(() => {
+    const map = new Map<string, Reminder[]>()
+    for (const r of data.reminders) {
+      const { date } = reminderParts(r)
+      map.set(date, [...(map.get(date) ?? []), r])
+    }
+    for (const list of map.values()) list.sort((a, b) => Number(a.done) - Number(b.done) || a.remindAt.localeCompare(b.remindAt))
+    return map
+  }, [data.reminders])
 
   const days = useMemo(() => {
     const first = startOfWeek(startOfMonth(cursor))
@@ -95,6 +109,7 @@ export function MonthCalendar() {
   }
 
   const selectedEntries = byDay.get(selected) ?? []
+  const selectedReminders = remindersByDay.get(selected) ?? []
   const monthKey = toDateOnly(cursor).slice(0, 7)
   const today = todayISO()
 
@@ -164,6 +179,7 @@ export function MonthCalendar() {
                     iso={iso}
                     date={d}
                     entries={byDay.get(iso) ?? []}
+                    reminders={remindersByDay.get(iso) ?? []}
                     outside={iso.slice(0, 7) !== monthKey}
                     isToday={iso === today}
                     selected={iso === selected}
@@ -177,9 +193,9 @@ export function MonthCalendar() {
 
           <aside className="rounded-2xl border border-graphite-line bg-graphite-soft [box-shadow:inset_0_3px_0_var(--color-brand-gray),var(--shadow-card)] p-4 pt-[19px]" aria-live="polite">
             <h3 className="text-sm font-semibold first-letter:uppercase">{formatLong(fromDateOnly(selected))}</h3>
-            {selectedEntries.length === 0 ? (
+            {selectedEntries.length === 0 && selectedReminders.length === 0 ? (
               <p className="mt-3 text-[13px] text-fg-subtle">Sem tarefas neste dia. Arraste uma tarefa para cá ou defina a data ao editá-la.</p>
-            ) : (
+            ) : selectedEntries.length === 0 ? null : (
               <ul className="mt-3 flex flex-col gap-1">
                 {selectedEntries.map((e) => (
                   <li key={e.key}>
@@ -201,6 +217,25 @@ export function MonthCalendar() {
                 ))}
               </ul>
             )}
+            {selectedReminders.length > 0 && (
+              <div className="mt-3 border-t border-graphite-line pt-3">
+                <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-fg-subtle uppercase">
+                  <Bell size={12} aria-hidden /> Lembretes
+                </p>
+                <ul className="flex flex-col gap-0.5">
+                  {selectedReminders.map((r) => (
+                    <li key={r.id} className="flex items-center gap-2.5 rounded-lg px-2 py-1.5">
+                      <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: r.done ? 'var(--color-fg-subtle)' : reminderColor(r.color) }} aria-hidden />
+                      <span className={cn('min-w-0 flex-1 truncate text-sm', r.done && 'text-fg-subtle line-through')}>{r.title}</span>
+                      <span className="shrink-0 text-xs text-fg-subtle tabular-nums">{reminderParts(r).time}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link to="/agenda" className="mt-2 inline-flex px-2 text-xs font-medium text-primary-text hover:underline">
+                  Gerenciar lembretes na Agenda →
+                </Link>
+              </div>
+            )}
           </aside>
         </div>
         <DragOverlay dropAnimation={null}>{dragging ? <ChipView entry={dragging} overlay /> : null}</DragOverlay>
@@ -213,6 +248,7 @@ interface DayCellProps {
   iso: string
   date: Date
   entries: Entry[]
+  reminders: Reminder[]
   outside: boolean
   isToday: boolean
   selected: boolean
@@ -220,7 +256,7 @@ interface DayCellProps {
   onOpen: (id: string) => void
 }
 
-function DayCell({ iso, date, entries, outside, isToday, selected, onSelect, onOpen }: DayCellProps) {
+function DayCell({ iso, date, entries, reminders, outside, isToday, selected, onSelect, onOpen }: DayCellProps) {
   const { setNodeRef, isOver } = useDroppable({ id: `day:${iso}` })
   const limit = 3
   const hasOverdue = entries.some((e) => e.kind === 'due' && isOverdue(e.task.dueDate, e.task.status))
@@ -238,7 +274,7 @@ function DayCell({ iso, date, entries, outside, isToday, selected, onSelect, onO
       <button
         type="button"
         onClick={onSelect}
-        aria-label={`${formatLong(date)}: ${entries.length} tarefa(s)`}
+        aria-label={`${formatLong(date)}: ${entries.length} tarefa(s)${reminders.length ? `, ${reminders.length} lembrete(s)` : ''}`}
         aria-pressed={selected}
         className="absolute inset-0 z-0"
       />
@@ -254,10 +290,13 @@ function DayCell({ iso, date, entries, outside, isToday, selected, onSelect, onO
         {hasOverdue && <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />}
       </span>
       {/* No celular, a vista mensal mostra apenas pontos; o detalhe fica no painel do dia. */}
-      {entries.length > 0 && (
+      {entries.length + reminders.length > 0 && (
         <span className="pointer-events-none relative z-[1] flex flex-wrap gap-0.5 px-1 sm:hidden" aria-hidden>
           {entries.slice(0, 4).map((e) => (
             <span key={e.key} className={cn('h-1.5 w-1.5 rounded-full', e.task.status === 'done' ? 'bg-fg-subtle' : 'bg-primary-text')} />
+          ))}
+          {reminders.slice(0, Math.max(0, 4 - entries.length)).map((r) => (
+            <span key={r.id} className="h-1.5 w-1.5 rounded-full" style={{ background: r.done ? 'var(--color-fg-subtle)' : reminderColor(r.color) }} />
           ))}
         </span>
       )}
@@ -265,9 +304,27 @@ function DayCell({ iso, date, entries, outside, isToday, selected, onSelect, onO
         {entries.slice(0, limit).map((e) => (
           <DraggableChip key={e.key} entry={e} onOpen={() => onOpen(e.task.id)} />
         ))}
-        {entries.length > limit && (
+        {/* Lembretes: só visualização (sem arrastar); clicar mostra o dia no painel. */}
+        {reminders.slice(0, Math.max(0, limit - entries.length)).map((r) => (
+          <button
+            key={r.id}
+            type="button"
+            onClick={onSelect}
+            title={`Lembrete: ${r.title} às ${reminderParts(r).time} — edite na Agenda`}
+            className={cn(
+              'flex w-full items-center gap-1 truncate rounded-md border px-1.5 py-1 text-left text-[11px] leading-tight',
+              r.done && 'border-line-strong text-fg-subtle line-through',
+            )}
+            style={reminderChipStyle(r.color, r.done)}
+          >
+            <Bell size={10} className="shrink-0" style={r.done ? undefined : { color: reminderColor(r.color) }} aria-hidden />
+            <span className="shrink-0 tabular-nums opacity-80">{reminderParts(r).time}</span>
+            <span className="truncate">{r.title}</span>
+          </button>
+        ))}
+        {entries.length + reminders.length > limit && (
           <button type="button" onClick={onSelect} className="px-1.5 text-left text-[11px] text-fg-subtle hover:text-fg">
-            +{entries.length - limit} mais
+            +{entries.length + reminders.length - limit} mais
           </button>
         )}
       </div>

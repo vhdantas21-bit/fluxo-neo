@@ -1,7 +1,7 @@
 import { addMonths, formatMonth, startOfMonth, toDateOnly, todayISO } from '@/lib/dates'
 import { cn } from '@/lib/utils'
 import type { DateOnly } from '@/types'
-import { TONE_DOT } from './AgendaItems'
+import { TONE_DOT, dotStyle } from './AgendaItems'
 import { monthDays, type AgendaItem } from './model'
 
 const LETTERS = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D']
@@ -72,7 +72,7 @@ export function QuarterView({
                         <span
                           key={it.key}
                           className={cn('h-1.5 w-1.5 rounded-full', isToday ? 'bg-white/90' : TONE_DOT[it.tone])}
-                          style={!isToday && it.reminder?.color && !it.reminder.done ? { background: it.reminder.color } : undefined}
+                          style={isToday ? undefined : dotStyle(it)}
                         />
                       ))}
                     </span>
